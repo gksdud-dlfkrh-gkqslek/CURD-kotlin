@@ -1,10 +1,12 @@
 package com.bs.crudkotlin.Controller
 
+import com.bs.crudkotlin.DTO.EquipmentDto
 import com.bs.crudkotlin.Service.EquipmentService
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -22,8 +24,8 @@ class EquipmentController(val equipmentService: EquipmentService) {
         return equipmentService.findByNum()
     }
     @PostMapping("/post") // 장비 등록
-    fun post(): String{
-        return equipmentService.create()
+    fun post(@RequestBody equipmentDto: EquipmentDto): String{
+        return equipmentService.create(equipmentDto)
     }
     @PutMapping("/put") // 정보 수정
     fun put(): String{
