@@ -6,21 +6,21 @@ import org.hibernate.annotations.CreationTimestamp
 import java.time.LocalDateTime
 
 @Entity
-class EquipmentEntity protected constructor() {
+class EquipmentEntity(num: Long, name: String, status: String, deadline: String, startdate: LocalDateTime) {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private val num: Long? = null
 
     @Column(nullable = false, length = 30)
-    private var name: String? = null
+    private val name: String? = null
 
     @Column(nullable = false, length = 30)
-    private var status: String? = null
+    private val status: String? = null
 
     @Column(length = 30)
     @ColumnDefault(" ")
-    private var deadline: String? = null
+    private val deadline: String? = null
 
     @CreationTimestamp
-    var startdate: LocalDateTime? = null
+    val startdate: LocalDateTime? = null
 }
