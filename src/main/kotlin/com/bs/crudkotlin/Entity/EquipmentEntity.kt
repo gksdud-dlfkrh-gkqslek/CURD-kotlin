@@ -3,6 +3,7 @@ package com.bs.crudkotlin.Entity
 import jakarta.persistence.*
 import org.hibernate.annotations.ColumnDefault
 import org.hibernate.annotations.CreationTimestamp
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Entity
@@ -18,11 +19,10 @@ class EquipmentEntity(
     @Column(nullable = false, length = 30)
     var status: String,
 
-    @Column(length = 30)
-    @ColumnDefault(" ")
-    var deadline: String? = null,
+    @Column(nullable = false)
+    var deadline: LocalDate? = null,
 
     @CreationTimestamp
-    var startdate: LocalDateTime? = null
+    var startdate: LocalDate? = null
 
 )
