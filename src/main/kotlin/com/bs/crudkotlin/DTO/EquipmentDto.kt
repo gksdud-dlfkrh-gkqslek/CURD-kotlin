@@ -5,11 +5,11 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 data class EquipmentDto(
-    val num:Long,
+    val num:Long?,
     val name:String,
     val status:String,
-    val deadline:LocalDate,
-    val startdate: LocalDate
+    val deadline:LocalDate?,
+    val startdate: LocalDate?
 ){  // Dto -> Entity 변환
     fun toEntity() = EquipmentEntity(
         num=num,

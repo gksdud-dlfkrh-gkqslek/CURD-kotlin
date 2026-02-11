@@ -13,8 +13,9 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
     fun findByNum(): String{
         return "단건 장비 조회"
     }
-    fun create(){
-
+    fun create(equipmentDto: EquipmentDto): EquipmentEntity? {
+        val entity = equipmentDto.toEntity()
+        return equipmentRepository.save(entity)
     }
     fun update(): String{
         return "정보 수정"
