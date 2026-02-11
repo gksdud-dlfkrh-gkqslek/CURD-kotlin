@@ -2,20 +2,19 @@ package com.bs.crudkotlin.Service
 
 import com.bs.crudkotlin.DTO.EquipmentDto
 import com.bs.crudkotlin.Entity.EquipmentEntity
+import com.bs.crudkotlin.Repository.EquipmentRepository
 import org.springframework.stereotype.Service
 
 @Service
-class EquipmentService {
-    // DTO -> Entity
-    fun equipmentDtoToEntity(dto: EquipmentDto): EquipmentEntity {}
+class EquipmentService(private val equipmentRepository: EquipmentRepository) {
     fun findAll(): String{
         return "장비 조회"
     }
     fun findByNum(): String{
         return "단건 장비 조회"
     }
-    fun create(equipmentDto: EquipmentDto): String{
-        val entity = dto.
+    fun create(){
+
     }
     fun update(): String{
         return "정보 수정"
