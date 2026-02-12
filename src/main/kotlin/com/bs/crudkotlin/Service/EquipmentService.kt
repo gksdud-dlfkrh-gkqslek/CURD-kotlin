@@ -7,8 +7,15 @@ import org.springframework.stereotype.Service
 
 @Service
 class EquipmentService(private val equipmentRepository: EquipmentRepository) {
-    fun findAll(): String{
-        return "장비 조회"
+    fun findAll(): List<EquipmentDto> {
+        return equipmentRepository.findAll().map {
+            EquipmentDto(
+                it.num,
+                it.name,
+                it.status,
+                it.deadline,
+                it.startdate
+            ) }
     }
     fun findByNum(): String{
         return "단건 장비 조회"

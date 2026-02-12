@@ -2,6 +2,7 @@ package com.bs.crudkotlin.Controller
 
 import com.bs.crudkotlin.DTO.EquipmentDto
 import com.bs.crudkotlin.Entity.EquipmentEntity
+import com.bs.crudkotlin.Repository.EquipmentRepository
 import com.bs.crudkotlin.Service.EquipmentService
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 class EquipmentController(val equipmentService: EquipmentService) {
 
     @GetMapping("/get")//전체 장비 조회
-    fun getEquipment(): String{
+    fun getEquipment(): List<EquipmentDto> {
         return equipmentService.findAll()
 
     }
