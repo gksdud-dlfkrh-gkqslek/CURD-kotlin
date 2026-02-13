@@ -26,8 +26,14 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
         val fromcreate = equipmentRepository.save(entity)
         return EquipmentDto.fromEntity(fromcreate)
     }
-    fun update(): String{
-        return "정보 수정"
+    fun update(num:Long,equipmentDto: EquipmentDto): String{
+        val entity = equipmentRepository.findById(num).get()
+        entity.name = equipmentDto.name
+        entity.status = equipmentDto.status
+        entity.deadline = equipmentDto.deadline
+        entity.startdate = equipmentDto.startdate
+        equipmentRepository.save(entity)
+        return "정보 수정 완료"
     }
     fun delete(num:Long): String{
         equipmentRepository.deleteById(num)

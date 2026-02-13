@@ -30,9 +30,9 @@ class EquipmentController(val equipmentService: EquipmentService) {
     fun post(@RequestBody equipmentDto: EquipmentDto): EquipmentDto {
         return equipmentService.create(equipmentDto)
     }
-    @PutMapping("/put") // 정보 수정
-    fun put(): String{
-        return equipmentService.update()
+    @PutMapping("/put/{num}") // 정보 수정
+    fun put(@PathVariable num:Long, @RequestBody equipmentDto: EquipmentDto): String{
+        return equipmentService.update(num,equipmentDto)
     }
     @DeleteMapping("/delete/{num}") //장비 정보 삭제
     fun delete(@PathVariable num:Long): String{
