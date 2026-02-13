@@ -6,6 +6,7 @@ import com.bs.crudkotlin.Repository.EquipmentRepository
 import com.bs.crudkotlin.Service.EquipmentService
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -21,9 +22,9 @@ class EquipmentController(val equipmentService: EquipmentService) {
         return equipmentService.findAll()
 
     }
-    @GetMapping("/get1") // 단건 조회
-    fun get1(): String{
-        return equipmentService.findByNum()
+    @GetMapping("/get1/{num}") // 단건 조회
+    fun get1(@PathVariable num:Long): EquipmentEntity {
+        return equipmentService.findByNum(num)
     }
     @PostMapping("/post") // 장비 등록
     fun post(@RequestBody equipmentDto: EquipmentDto): EquipmentDto {

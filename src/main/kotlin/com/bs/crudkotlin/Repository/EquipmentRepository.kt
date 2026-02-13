@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface EquipmentRepository : JpaRepository<EquipmentEntity, Long> {
     fun findByNum(num: Long): EquipmentEntity?
+    fun num(num: Long): MutableList<EquipmentEntity>
 }
