@@ -29,7 +29,8 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
     fun update(): String{
         return "정보 수정"
     }
-    fun delete(): String{
-        return "장비 삭제"
+    fun delete(num:Long): String{
+        equipmentRepository.deleteById(num)
+        return "장비 삭제 완료"
     }
 }

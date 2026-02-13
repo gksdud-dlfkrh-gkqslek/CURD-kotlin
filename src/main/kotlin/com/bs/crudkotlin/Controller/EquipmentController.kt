@@ -34,8 +34,8 @@ class EquipmentController(val equipmentService: EquipmentService) {
     fun put(): String{
         return equipmentService.update()
     }
-    @DeleteMapping("/delete") //장비 정보 삭제
-    fun delete(): String{
-        return equipmentService.delete()
+    @DeleteMapping("/delete/{num}") //장비 정보 삭제
+    fun delete(@PathVariable num:Long): String{
+        return equipmentService.delete(num)
     }
 }
