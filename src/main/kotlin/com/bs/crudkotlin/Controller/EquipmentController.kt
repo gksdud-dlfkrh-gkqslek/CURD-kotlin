@@ -4,6 +4,7 @@ import com.bs.crudkotlin.DTO.EquipmentDto
 import com.bs.crudkotlin.Entity.EquipmentEntity
 import com.bs.crudkotlin.Repository.EquipmentRepository
 import com.bs.crudkotlin.Service.EquipmentService
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -23,7 +24,7 @@ class EquipmentController(val equipmentService: EquipmentService) {
 
     }
     @GetMapping("/get1/{num}") // 단건 조회
-    fun get1(@PathVariable num:Long): EquipmentEntity {
+    fun get1(@PathVariable num:Long): Any? {
         return equipmentService.findByNum(num)
     }
     @PostMapping("/post") // 장비 등록

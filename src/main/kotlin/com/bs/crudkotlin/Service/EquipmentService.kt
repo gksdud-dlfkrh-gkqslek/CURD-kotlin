@@ -4,6 +4,8 @@ import com.bs.crudkotlin.DTO.EquipmentDto
 import com.bs.crudkotlin.Entity.EquipmentEntity
 import com.bs.crudkotlin.Repository.EquipmentRepository
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 
 @Service
@@ -18,8 +20,12 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
                 it.startdate
             ) }
     }
-    fun findByNum(num:Long): EquipmentEntity {
-        return equipmentRepository.findByIdOrNull(num)?:throw IllegalArgumentException("장비 없음")
+    fun findByNum(num:Long): Any? {
+        val errorcheck: EquipmentEntity? = equipmentRepository.findById(num).orElse(null)
+        if(errorcheck == null){
+            return ResponseEntity.status(404).body("$num 번 장비를 찾을 수 없습니다")
+        }
+        return errorcheck
     }
     fun create(equipmentDto: EquipmentDto): EquipmentDto {
         val entity = equipmentDto.toEntity()
