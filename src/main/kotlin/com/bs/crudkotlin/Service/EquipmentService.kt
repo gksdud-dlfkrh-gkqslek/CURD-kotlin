@@ -27,10 +27,11 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
         }
         return errorcheck
     }
-    fun create(equipmentDto: EquipmentDto): EquipmentDto {
+    fun create(equipmentDto: EquipmentDto): String {
         val entity = equipmentDto.toEntity()
         val fromcreate = equipmentRepository.save(entity)
-        return EquipmentDto.fromEntity(fromcreate)
+        EquipmentDto.fromEntity(fromcreate)
+        return "등록 완료!"
     }
     fun update(num:Long,equipmentDto: EquipmentDto): String{
         val entity = equipmentRepository.findById(num).get()

@@ -28,7 +28,7 @@ class EquipmentController(val equipmentService: EquipmentService) {
         return equipmentService.findByNum(num)
     }
     @PostMapping("/post") // 장비 등록
-    fun post(@RequestBody equipmentDto: EquipmentDto): EquipmentDto {
+    fun post(@RequestBody equipmentDto: EquipmentDto): String {
         return equipmentService.create(equipmentDto)
     }
     @PutMapping("/put/{num}") // 정보 수정
