@@ -42,7 +42,11 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
         equipmentRepository.save(entity)
         return "정보 수정 완료"
     }
-    fun delete(num:Long): String{
+    fun delete(num:Long): Any?{
+        val errorcheck: EquipmentEntity? = equipmentRepository.findById(num).orElse(null)
+        if(errorcheck == null){
+            return ResponseEntity.status(404).body("$num 번 장비를 찾을 수 없습니다")
+        }
         equipmentRepository.deleteById(num)
         return "장비 삭제 완료"
     }

@@ -36,7 +36,7 @@ class EquipmentController(val equipmentService: EquipmentService) {
         return equipmentService.update(num,equipmentDto)
     }
     @DeleteMapping("/delete/{num}") //장비 정보 삭제
-    fun delete(@PathVariable num:Long): String{
+    fun delete(@PathVariable num:Long): Any?{
         return equipmentService.delete(num)
     }
 }
