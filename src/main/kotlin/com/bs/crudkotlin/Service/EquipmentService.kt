@@ -16,7 +16,8 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
                 it.num,
                 it.name,
                 it.status,
-                it.deadline
+                it.deadline,
+                it.startdate
             ) }
     }
     fun findByNum(num:Long): Any? {
