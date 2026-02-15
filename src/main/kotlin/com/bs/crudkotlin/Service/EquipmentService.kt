@@ -16,8 +16,7 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
                 it.num,
                 it.name,
                 it.status,
-                it.deadline,
-                it.startdate
+                it.deadline
             ) }
     }
     fun findByNum(num:Long): Any? {
@@ -38,7 +37,6 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
         entity.name = equipmentDto.name
         entity.status = equipmentDto.status
         entity.deadline = equipmentDto.deadline
-        entity.startdate = equipmentDto.startdate
         equipmentRepository.save(entity)
         return "정보 수정 완료"
     }

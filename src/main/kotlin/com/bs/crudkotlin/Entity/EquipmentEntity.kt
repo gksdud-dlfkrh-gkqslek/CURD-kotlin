@@ -6,7 +6,6 @@ import org.hibernate.annotations.ColumnDefault
 import org.hibernate.annotations.CreationTimestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 
 @Entity
 @Table(name = "equipment_data")
@@ -24,7 +23,4 @@ class EquipmentEntity(
     @Column(nullable = false)
     var deadline: LocalDate? = null,
 
-    @CreationTimestamp
-    var startdate: LocalDate? = null
-
-    )
+)
