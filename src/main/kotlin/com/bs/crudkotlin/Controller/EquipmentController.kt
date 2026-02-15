@@ -5,6 +5,7 @@ import com.bs.crudkotlin.Entity.EquipmentEntity
 import com.bs.crudkotlin.Repository.EquipmentRepository
 import com.bs.crudkotlin.Service.EquipmentService
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-
+@CrossOrigin(origins = ["*"])
 @RestController
 @RequestMapping("/api/equipment")
 class EquipmentController(val equipmentService: EquipmentService) {
@@ -23,7 +24,7 @@ class EquipmentController(val equipmentService: EquipmentService) {
         return equipmentService.findAll()
 
     }
-    @GetMapping("/get1/{num}") // 단건 조회
+    @GetMapping("/get/{num}") // 단건 조회
     fun get1(@PathVariable num:Long): Any? {
         return equipmentService.findByNum(num)
     }
