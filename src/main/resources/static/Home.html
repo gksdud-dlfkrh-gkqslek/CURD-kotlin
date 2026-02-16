@@ -1,188 +1,276 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>다이빙 장비 관리</title>
+    <title>🤿 다이빙 장비 관리</title>
+
     <style>
-        h1 {
-            text-align: center;
+        body { font-family: Arial; background:#f4f6f9; }
+        h1 { text-align:center; }
+        .container { width:80%; margin:auto; }
+        .card {
+            background:white;
+            padding:20px;
+            margin-top:20px;
+            border-radius:10px;
+            box-shadow:0 4px 10px rgba(0,0,0,0.1);
         }
-        .search {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            margin-top: 50px;
+        input { padding:6px; margin:5px; }
+        button {
+            padding:6px 12px;
+            border:none;
+            border-radius:6px;
+            cursor:pointer;
         }
-        table {
-            width: 50%;
-            margin: 30px auto;
-            border-collapse: collapse;
-        }
+        .btn-primary { background:#3498db; color:white; }
+        .btn-danger { background:#e74c3c; color:white; }
+        .btn-warning { background:#f39c12; color:white; }
+        .btn-success { background:#2ecc71; color:white; }
 
+        table { width:100%; border-collapse:collapse; margin-top:15px; }
         th, td {
-            padding: 12px;
-            text-align: center;
+            padding:10px;
+            text-align:center;
+            border-bottom:1px solid #ddd;
         }
+        th { background:#3498db; color:white; }
 
-        thead {
-            background-color: #e3f2fd;
-        }
-        button{
-            margin-right: 10px;
-        }
         .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
+            display:none;
+            position:fixed;
+            top:0; left:0;
+            width:100%; height:100%;
+            background:rgba(0,0,0,0.5);
         }
-
         .modal-content {
-            background: white;
-            padding: 20px;
-            width: 300px;
-            margin: 200px auto;
-            text-align: center;
+            background:white;
+            width:300px;
+            margin:150px auto;
+            padding:20px;
+            border-radius:10px;
+            text-align:center;
         }
-
     </style>
 </head>
+
 <body>
-    <h1>🤿 다이빙 장비 관리 페이지</h1>
-    <div class="search">
-        <h4>검색어 입력 : </h4>
-        <form method="Get">
-            <input type="number" placeholder="장비 번호를 입력해주세요"/>
-            <button type="button">검색</button>
-        </form>
+
+<h1>🤿 다이빙 장비 관리 시스템</h1>
+
+<div class="container">
+
+    <!-- 🔍 단건 조회 -->
+    <div class="card">
+        <h3>🔍 단건 조회</h3>
+        <input type="number" id="searchNum" placeholder="장비 번호">
+        <button class="btn-primary" onclick="getOne()">조회</button>
+        <button onclick="loadAll()">전체 보기</button>
     </div>
-    <table border="1">
-        <thead>
+
+    <!-- ➕ 등록 -->
+    <div class="card">
+        <h3>➕ 장비 등록</h3>
+        <input type="number" id="newNum" placeholder="번호">
+        <input type="text" id="newName" placeholder="이름">
+        <input type="text" id="newStatus" placeholder="상태">
+        <input type="date" id="newDeadline">
+        <button class="btn-success" onclick="createEquipment()">등록</button>
+    </div>
+
+    <!-- 📋 전체 조회 -->
+    <div class="card">
+        <h3>📋 장비 목록</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>번호</th>
+                <th>이름</th>
+                <th>상태</th>
+                <th>마감일</th>
+                <th>관리</th>
+            </tr>
+            </thead>
+            <tbody id="equipmentTable"></tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- ✏ 수정 모달 -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <h3>✏ 장비 수정</h3>
+        <input type="hidden" id="editNum">
+        <input type="text" id="editName"><br>
+        <input type="text" id="editStatus"><br>
+        <input type="date" id="editDeadline"><br><br>
+        <button class="btn-warning" onclick="updateEquipment()">저장</button>
+        <button onclick="closeModal()">취소</button>
+    </div>
+</div>
+
+<script>
+
+    const API = "http://localhost:8080/api/equipment";
+
+    /* ================= 전체 조회 ================= */
+    function loadAll(){
+        fetch(`${API}/get`)
+            .then(res => res.json())
+            .then(renderTable)
+            .catch(()=>alert("서버 오류"));
+    }
+
+    /* ================= 단건 조회 ================= */
+    function getOne(){
+        const num = document.getElementById("searchNum").value;
+
+        fetch(`${API}/get/${num}`)
+            .then(res=>{
+                if(!res.ok) throw new Error();
+                return res.json();
+            })
+            .then(data=>{
+                renderTable([data]); // 배열로 감싸서 재사용
+            })
+            .catch(()=>alert("존재하지 않는 장비 번호입니다."));
+    }
+
+    /* ================= 테이블 렌더링 ================= */
+    function renderTable(data){
+        const table = document.getElementById("equipmentTable");
+        table.innerHTML="";
+
+        data.forEach(item=>{
+            table.innerHTML += `
         <tr>
-            <th>번호</th>
-            <th>이름</th>
-            <th>상태</th>
-            <th>관리</th>
-        </tr>
-        </thead>
-        <tbody id="equipmentTable">
-        </tbody>
-    </table>
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <h3>장비 수정</h3>
-            <input type="hidden" id="editNum">
-            <div>
-                이름: <input type="text" id="editName">
-            </div>
-            <div>
-                상태: <input type="text" id="editStatus">
-            </div>
-            <div>
-                마감일: <input type="date" id="editDeadline">
-            </div>
+            <td>${item.num}</td>
+            <td>${item.name}</td>
+            <td>${item.status}</td>
+            <td>${item.deadline ?? ""}</td>
+            <td>
+                <button class="btn-primary" onclick="reserveEquipment(${item.num})">예약</button>
+                <button class="btn-warning" onclick="openEditFromRow(this)">수정</button>
+                <button class="btn-danger" onclick="deleteEquipment(${item.num})">삭제</button>
+            </td>
+        </tr>`;
+        });
+    }
 
-            <br>
-            <button onclick="closeEditModal()">취소</button>
-            <button onclick="updateEquipment()">저장</button>
-        </div>
-    </div>
-
-    <script>
-        fetch("http://localhost:8080/api/equipment/get")
-            .then(response => response.json())
-            .then(data => {
-                const table = document.getElementById("equipmentTable");
-
-                data.forEach(item => {
-                    const row = `
-                <tr id="row-${item.num}">
-                    <td>${item.num}</td>
-                    <td>${item.name}</td>
-                    <td>${item.status}</td>
-                    <td>
-                        <button onclick="openEditModal(${item.num}, '${item.name}', '${item.status}', '${item.deadline}')">수정</button>
-                        <button onclick="showPopup(${item.num})">삭제</button>
-                    </td>
-                </tr>
-                `;
-                    table.innerHTML += row;
-                });
-            });
-
-        function showPopup(num) {
-
-            if (!confirm(num + "번 장비를 삭제하시겠습니까?")) {
-                return;
-            }
-
-            fetch(`http://localhost:8080/api/equipment/delete/${num}`, {
-                method: "DELETE"
+    /* ================= 등록 ================= */
+    function createEquipment(){
+        fetch(`${API}/post`,{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+                num:document.getElementById("newNum").value,
+                name:document.getElementById("newName").value,
+                status:document.getElementById("newStatus").value,
+                deadline:document.getElementById("newDeadline").value
             })
-                .then(response => {
-                    if (response.ok) {
-                        alert("삭제 완료!");
-
-                        // 🔥 새로고침 없이 해당 행만 삭제
-                        document.getElementById(`row-${num}`).remove();
-                    } else {
-                        alert("삭제 실패");
-                    }
-                })
-                .catch(error => {
-                    console.error("에러:", error);
-                });
-        }
-        function openEditModal(num, name, status, deadline) {
-            document.getElementById("editNum").value = num;
-            document.getElementById("editName").value = name;
-            document.getElementById("editStatus").value = status;
-            document.getElementById("editDeadline").value = deadline;
-
-            document.getElementById("editModal").style.display = "block";
-        }
-
-        function closeEditModal() {
-            document.getElementById("editModal").style.display = "none";
-        }
-
-        function updateEquipment() {
-
-            const num = document.getElementById("editNum").value;
-            const name = document.getElementById("editName").value;
-            const status = document.getElementById("editStatus").value;
-            const deadline = document.getElementById("editDeadline").value;
-
-            fetch(`http://localhost:8080/api/equipment/put/${num}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    name: name,
-                    status: status,
-                    deadline: deadline
-                })
+        })
+            .then(res=>{
+                if(res.ok){
+                    alert("등록 완료");
+                    document.getElementById("newNum").value="";
+                    document.getElementById("newName").value="";
+                    document.getElementById("newStatus").value="";
+                    document.getElementById("newDeadline").value="";
+                    loadAll();
+                } else {
+                    alert("등록 실패");
+                }
             })
-                .then(response => {
-                    if (response.ok) {
-                        alert("수정 완료!");
-                        location.reload(); // 간단하게 새로고침
-                    } else {
-                        alert("수정 실패");
-                    }
-                })
-                .catch(error => {
-                    console.error("에러:", error);
+            .catch(()=>alert("서버 오류"));
+    }
+
+    /* ================= 삭제 ================= */
+    function deleteEquipment(num){
+        if(!confirm("삭제하시겠습니까?")) return;
+
+        fetch(`${API}/delete/${num}`,{method:"DELETE"})
+            .then(res=>{
+                if(res.ok){
+                    alert("삭제 완료");
+                    loadAll();
+                } else {
+                    alert("삭제 실패");
+                }
+            })
+            .catch(()=>alert("서버 오류"));
+    }
+
+    /* ================= 예약 ================= */
+    function reserveEquipment(num){
+        fetch(`${API}/get/${num}`)
+            .then(res=>res.json())
+            .then(data=>{
+                if(data.status.startsWith("(예약중)")){
+                    alert("이미 예약된 장비입니다.");
+                    return;
+                }
+                return fetch(`${API}/put/${num}`,{
+                    method:"PUT",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify({
+                        status:"(예약중)"+data.status
+                    })
                 });
-        }
+            })
+            .then(res=>{
+                if(res && res.ok){
+                    alert("예약 완료!");
+                    loadAll();
+                }
+            })
+            .catch(()=>alert("서버 오류"));
+    }
 
-    </script>
+    /* ================= 수정 ================= */
+    function openEditFromRow(btn){
+        const row = btn.closest("tr");
+        const cells = row.querySelectorAll("td");
 
+        document.getElementById("editNum").value = cells[0].innerText;
+        document.getElementById("editName").value = cells[1].innerText;
+        document.getElementById("editStatus").value = cells[2].innerText;
+        document.getElementById("editDeadline").value = cells[3].innerText;
+
+        document.getElementById("editModal").style.display="block";
+    }
+
+    function closeModal(){
+        document.getElementById("editModal").style.display="none";
+    }
+
+    function updateEquipment(){
+        const num = document.getElementById("editNum").value;
+
+        fetch(`${API}/put/${num}`,{
+            method:"PUT",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+                name:document.getElementById("editName").value,
+                status:document.getElementById("editStatus").value,
+                deadline:document.getElementById("editDeadline").value
+            })
+        })
+            .then(res=>{
+                if(res.ok){
+                    alert("수정 완료");
+                    closeModal();
+                    loadAll();
+                } else {
+                    alert("수정 실패");
+                }
+            })
+            .catch(()=>alert("서버 오류"));
+    }
+
+    /* ================= 초기 로딩 ================= */
+    loadAll();
+
+</script>
 
 </body>
 </html>
