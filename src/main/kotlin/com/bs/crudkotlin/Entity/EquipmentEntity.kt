@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.util.UUID
 
 @Entity
 @Table(name = "equipment_data")
@@ -16,6 +17,10 @@ import java.time.LocalTime
 class EquipmentEntity(
 
     @Id
+    @Column(length = 36)
+    val id: String = UUID.randomUUID().toString(),
+
+    @Column(nullable = false, length = 30)
     var num: Long? = null,
 
     @Column(nullable = false, length = 30)
