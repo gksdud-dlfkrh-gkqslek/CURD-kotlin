@@ -5,29 +5,39 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import java.time.LocalDate
 
 data class EquipmentDto(
-    val num:Long?,
-    val name:String,
-    val status:String,
+
+    val id: String?,
+    val num: Long?,
+    val name: String,
+    val status: String,
+
     @JsonFormat(pattern = "yyyy-MM-dd")
-    val deadline:LocalDate?,
+    val deadline: LocalDate?,
+
     @JsonFormat(pattern = "yyyy-MM-dd")
     val startdate: LocalDate?
-){  // Dto -> Entity 변환
+
+) {
+
+    // DTO -> Entity
     fun toEntity() = EquipmentEntity(
-        num=num,
-        name=name,
-        status=status,
-        deadline=deadline
+        id = id,
+        num = num,
+        name = name,
+        status = status,
+        deadline = deadline,
+        startdate = startdate
     )
-    // Entity -> Dto 변환
+
+    //Entity -> DTO
     companion object {
         fun fromEntity(entity: EquipmentEntity) = EquipmentDto(
-            num=entity.num,
-            name=entity.name,
-            status=entity.status,
-            deadline=entity.deadline,
-            startdate=entity.startdate
-
+            id = entity.id,
+            num = entity.num,
+            name = entity.name,
+            status = entity.status,
+            deadline = entity.deadline,
+            startdate = entity.startdate
         )
     }
 }
