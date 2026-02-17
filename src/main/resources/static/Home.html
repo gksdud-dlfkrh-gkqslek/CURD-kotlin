@@ -149,7 +149,6 @@
             <td>${item.status}</td>
             <td>${item.deadline ?? ""}</td>
             <td>
-                <button class="btn-primary" onclick="reserveEquipment(${item.num})">예약</button>
                 <button class="btn-warning" onclick="openEditFromRow(this)">수정</button>
                 <button class="btn-danger" onclick="deleteEquipment(${item.num})">삭제</button>
             </td>
@@ -195,32 +194,6 @@
                     loadAll();
                 } else {
                     alert("삭제 실패");
-                }
-            })
-            .catch(()=>alert("서버 오류"));
-    }
-
-    /* ================= 예약 ================= */
-    function reserveEquipment(num){
-        fetch(`${API}/get/${num}`)
-            .then(res=>res.json())
-            .then(data=>{
-                if(data.status.startsWith("(예약중)")){
-                    alert("이미 예약된 장비입니다.");
-                    return;
-                }
-                return fetch(`${API}/put/${num}`,{
-                    method:"PUT",
-                    headers:{"Content-Type":"application/json"},
-                    body:JSON.stringify({
-                        status:"(예약중)"+data.status
-                    })
-                });
-            })
-            .then(res=>{
-                if(res && res.ok){
-                    alert("예약 완료!");
-                    loadAll();
                 }
             })
             .catch(()=>alert("서버 오류"));
