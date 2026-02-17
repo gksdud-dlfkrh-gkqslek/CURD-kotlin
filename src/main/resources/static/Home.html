@@ -86,6 +86,7 @@
                 <th>이름</th>
                 <th>상태</th>
                 <th>반납일</th>
+                <th>예약일</th>
                 <th>관리</th>
             </tr>
             </thead>
@@ -102,7 +103,6 @@
         <input type="hidden" id="editNum">
         <input type="text" id="editName"><br>
         <input type="text" id="editStatus"><br>
-        <input type="date" id="editDeadline"><br><br>
         <button class="btn-warning" onclick="updateEquipment()">저장</button>
         <button onclick="closeModal()">취소</button>
     </div>
@@ -147,6 +147,7 @@
             <td>${item.name}</td>
             <td>${item.status}</td>
             <td>${item.deadline ?? ""}</td>
+            <td>${item.startdate ?? ""}</td>
             <td>
                 <button class="btn-warning" onclick="openEditFromRow(this)">수정</button>
                 <button class="btn-danger" onclick="deleteEquipment(${item.num})">삭제</button>
@@ -164,7 +165,6 @@
                 num:document.getElementById("newNum").value,
                 name:document.getElementById("newName").value,
                 status:document.getElementById("newStatus").value,
-                deadline:document.getElementById("newDeadline").value
             })
         })
             .then(res=>{
@@ -173,7 +173,6 @@
                     document.getElementById("newNum").value="";
                     document.getElementById("newName").value="";
                     document.getElementById("newStatus").value="";
-                    document.getElementById("newDeadline").value="";
                     loadAll();
                 } else {
                     alert("등록 실패");
@@ -206,7 +205,6 @@
         document.getElementById("editNum").value = cells[0].innerText;
         document.getElementById("editName").value = cells[1].innerText;
         document.getElementById("editStatus").value = cells[2].innerText;
-        document.getElementById("editDeadline").value = cells[3].innerText;
 
         document.getElementById("editModal").style.display="block";
     }
@@ -224,7 +222,6 @@
             body:JSON.stringify({
                 name:document.getElementById("editName").value,
                 status:document.getElementById("editStatus").value,
-                deadline:document.getElementById("editDeadline").value
             })
         })
             .then(res=>{
