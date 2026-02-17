@@ -13,6 +13,7 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
     fun findAll(): List<EquipmentDto> {
         return equipmentRepository.findAll().map {
             EquipmentDto(
+                it.id,
                 it.num,
                 it.name,
                 it.status,
@@ -35,6 +36,7 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
     }
     fun update(num:Long,equipmentDto: EquipmentDto): String{
         val entity = equipmentRepository.findById(num).get()
+        entity.num = equipmentDto.num
         entity.name = equipmentDto.name
         entity.status = equipmentDto.status
         entity.deadline = equipmentDto.deadline
