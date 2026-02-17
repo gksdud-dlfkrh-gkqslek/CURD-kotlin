@@ -22,20 +22,30 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
             ) }
     }
     fun findByNum(num:Long): Any? {
-        val errorcheck: EquipmentEntity? = equipmentRepository.findById(num).orElse(null)
+        val errorcheck: EquipmentEntity? = equipmentRepository.findByNum(num)
         if(errorcheck == null){
             return ResponseEntity.status(404).body("$num 번 장비를 찾을 수 없습니다")
         }
         return errorcheck
     }
-    fun create(equipmentDto: EquipmentDto): String {
+    fun findByName(name: String): Any? {
+        val errorcheck: EquipmentEntity? = equipmentRepository.findByName(name)
+        if(errorcheck == null){
+            return ResponseEntity.status(404).body("$name 장비를 찾을 수 없습니다")
+        }
+        return errorcheck
+    }
+
+
+
+    fun create(equipmentDto: EquipmentDto): ResponseEntity<Any> {
         val entity = equipmentDto.toEntity()
         val fromcreate = equipmentRepository.save(entity)
-        EquipmentDto.fromEntity(fromcreate)
-        return "등록 완료!"
+        val responseDto = EquipmentDto.fromEntity(fromcreate)
+        return ResponseEntity.ok(responseDto)
     }
-    fun update(num:Long,equipmentDto: EquipmentDto): String{
-        val entity = equipmentRepository.findById(num).get()
+    fun update(id: String, equipmentDto: EquipmentDto): String{
+        val entity = equipmentRepository.findById(id).get()
         entity.num = equipmentDto.num
         entity.name = equipmentDto.name
         entity.status = equipmentDto.status
@@ -43,12 +53,12 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
         equipmentRepository.save(entity)
         return "정보 수정 완료"
     }
-    fun delete(num:Long): Any?{
-        val errorcheck: EquipmentEntity? = equipmentRepository.findById(num).orElse(null)
+    fun delete(id: String): Any?{
+        val errorcheck: EquipmentEntity? = equipmentRepository.findById(id).orElse(null)
         if(errorcheck == null){
-            return ResponseEntity.status(404).body("$num 번 장비를 찾을 수 없습니다")
+            return ResponseEntity.status(404).body("장비를 찾을 수 없습니다")
         }
-        equipmentRepository.deleteById(num)
+        equipmentRepository.deleteById(id)
         return "장비 삭제 완료"
     }
 }

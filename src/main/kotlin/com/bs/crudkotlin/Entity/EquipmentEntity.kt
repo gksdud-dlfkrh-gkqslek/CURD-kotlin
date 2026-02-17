@@ -5,6 +5,7 @@ import jakarta.persistence.*
 import org.hibernate.annotations.ColumnDefault
 import org.hibernate.annotations.CreationTimestamp
 import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -13,7 +14,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "equipment_data")
-@EntityListeners
+@EntityListeners(AuditingEntityListener::class)
 class EquipmentEntity(
 
     @Id
@@ -29,11 +30,11 @@ class EquipmentEntity(
     @Column(nullable = false, length = 30)
     var status: String,
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     var deadline: LocalDate? = null,
 
     @CreatedDate
-    @Column(nullable = false,updatable = false)
-    var startdate: LocalDate = LocalDate.now()
+    @Column(nullable = true,updatable = false)
+    var startdate: LocalDate? = LocalDate.now()
 
 )

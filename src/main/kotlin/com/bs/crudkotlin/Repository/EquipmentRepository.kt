@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface EquipmentRepository : JpaRepository<EquipmentEntity, Long> {
+interface EquipmentRepository : JpaRepository<EquipmentEntity, String> {
     fun findByNum(num: Long): EquipmentEntity?
-    fun num(num: Long): MutableList<EquipmentEntity>
+    fun findByName(name: String): EquipmentEntity?
 }

@@ -24,20 +24,25 @@ class EquipmentController(val equipmentService: EquipmentService) {
         return equipmentService.findAll()
 
     }
-    @GetMapping("/get/{num}") // 단건 조회
-    fun get1(@PathVariable num:Long): Any? {
+    @GetMapping("/get/num/{num}") // 단건 조회
+    fun getByNum(@PathVariable num:Long): Any? {
         return equipmentService.findByNum(num)
     }
+    @GetMapping("/get/name/{name}")
+    fun getByName(@PathVariable name: String): Any? {
+        return equipmentService.findByName(name)
+    }
+
     @PostMapping("/post") // 장비 등록
-    fun post(@RequestBody equipmentDto: EquipmentDto): String {
+    fun post(@RequestBody equipmentDto: EquipmentDto): ResponseEntity<Any> {
         return equipmentService.create(equipmentDto)
     }
-    @PutMapping("/put/{num}") // 정보 수정
-    fun put(@PathVariable num:Long, @RequestBody equipmentDto: EquipmentDto): String{
-        return equipmentService.update(num,equipmentDto)
+    @PutMapping("/put/{id}") // 정보 수정
+    fun put(@PathVariable id: String, @RequestBody equipmentDto: EquipmentDto): String{
+        return equipmentService.update(id,equipmentDto)
     }
-    @DeleteMapping("/delete/{num}") //장비 정보 삭제
-    fun delete(@PathVariable num:Long): Any?{
-        return equipmentService.delete(num)
+    @DeleteMapping("/delete/{id}") //장비 정보 삭제
+    fun delete(@PathVariable id: String): Any?{
+        return equipmentService.delete(id)
     }
 }

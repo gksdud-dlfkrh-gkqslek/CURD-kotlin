@@ -6,7 +6,7 @@ import java.time.LocalDate
 
 data class EquipmentDto(
 
-    val id: String?,
+    val id: String? = null,
     val num: Long?,
     val name: String,
     val status: String,
@@ -21,12 +21,10 @@ data class EquipmentDto(
 
     // DTO -> Entity
     fun toEntity() = EquipmentEntity(
-        id = id,
         num = num,
         name = name,
         status = status,
-        deadline = deadline,
-        startdate = startdate
+        deadline = deadline
     )
 
     //Entity -> DTO
