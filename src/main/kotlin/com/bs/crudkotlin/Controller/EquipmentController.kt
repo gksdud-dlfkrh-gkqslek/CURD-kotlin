@@ -16,32 +16,41 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 @CrossOrigin(origins = ["*"])
 @RestController
-@RequestMapping("/api/equipment")
+@RequestMapping("/api/equipments")
 class EquipmentController(val equipmentService: EquipmentService) {
 
-    @GetMapping("/get")//전체 장비 조회
+    // 전체 장비 조회
+    @GetMapping()
     fun getEquipment(): List<EquipmentDto> {
         return equipmentService.findAll()
-
     }
-    @GetMapping("/get/num/{num}") // 단건 조회
-    fun getByNum(@PathVariable num:Long): Any? {
+
+    // num값으로 조회
+    @GetMapping("/{num}")
+    fun getByNum(@PathVariable num:Long): ResponseEntity<EquipmentDto> {
         return equipmentService.findByNum(num)
     }
-    @GetMapping("/get/name/{name}")
+
+    // name값으로 조회
+    @GetMapping("{name}")
     fun getByName(@PathVariable name: String): Any? {
         return equipmentService.findByName(name)
     }
 
-    @PostMapping("/post") // 장비 등록
+    // 장비 등록
+    @PostMapping()
     fun post(@RequestBody equipmentDto: EquipmentDto): ResponseEntity<Any> {
         return equipmentService.create(equipmentDto)
     }
-    @PutMapping("/put/{id}") // 정보 수정
+
+    // 정보 수정
+    @PutMapping("{id}")
     fun put(@PathVariable id: String, @RequestBody equipmentDto: EquipmentDto): String{
         return equipmentService.update(id,equipmentDto)
     }
-    @DeleteMapping("/delete/{id}") //장비 정보 삭제
+
+    // 장비 정보 삭제
+    @DeleteMapping("{id}")
     fun delete(@PathVariable id: String): Any?{
         return equipmentService.delete(id)
     }
