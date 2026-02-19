@@ -26,13 +26,13 @@ class EquipmentController(val equipmentService: EquipmentService) {
     }
 
     // num값으로 조회
-    @GetMapping("/{num}")
+    @GetMapping("/num/{num}")
     fun getByNum(@PathVariable num:Long): ResponseEntity<EquipmentDto> {
         return equipmentService.findByNum(num)
     }
 
     // name값으로 조회
-    @GetMapping("{name}")
+    @GetMapping("/name/{name}")
     fun getByName(@PathVariable name: String): ResponseEntity<EquipmentDto> {
         return equipmentService.findByName(name)
     }
@@ -44,13 +44,13 @@ class EquipmentController(val equipmentService: EquipmentService) {
     }
 
     // 정보 수정
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     fun put(@PathVariable id: String, @RequestBody equipmentDto: EquipmentDto): ResponseEntity<String>{
         return equipmentService.update(id,equipmentDto)
     }
 
     // 장비 정보 삭제
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     fun delete(@PathVariable id: String): String? {
         return equipmentService.delete(id)
     }
