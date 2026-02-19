@@ -30,7 +30,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("tools.jackson.module:jackson-module-kotlin")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
     compileOnly("org.projectlombok:lombok")
     runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
     annotationProcessor("org.projectlombok:lombok")
