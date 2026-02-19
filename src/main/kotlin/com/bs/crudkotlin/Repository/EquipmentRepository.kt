@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface EquipmentRepository : JpaRepository<EquipmentEntity, String> {
-    fun findByNum(num: Long): EquipmentEntity?
-    fun findByName(name: String): EquipmentEntity?
+    fun findByNum(num: Long): List<EquipmentEntity>
+    fun findByName(name: String): List<EquipmentEntity>
 }

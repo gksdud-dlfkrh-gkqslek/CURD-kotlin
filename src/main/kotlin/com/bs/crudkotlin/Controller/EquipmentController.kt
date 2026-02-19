@@ -27,13 +27,13 @@ class EquipmentController(val equipmentService: EquipmentService) {
 
     // num값으로 조회
     @GetMapping("/num/{num}")
-    fun getByNum(@PathVariable num:Long): ResponseEntity<EquipmentDto> {
+    fun getByNum(@PathVariable num:Long): ResponseEntity<List<EquipmentDto>> {
         return equipmentService.findByNum(num)
     }
 
     // name값으로 조회
     @GetMapping("/name/{name}")
-    fun getByName(@PathVariable name: String): ResponseEntity<EquipmentDto> {
+    fun getByName(@PathVariable name: String): ResponseEntity<List<EquipmentDto>> {
         return equipmentService.findByName(name)
     }
 

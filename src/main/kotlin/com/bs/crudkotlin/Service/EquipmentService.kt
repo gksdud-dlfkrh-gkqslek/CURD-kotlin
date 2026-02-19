@@ -7,6 +7,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import kotlin.collections.map
 
 @Service
 class EquipmentService(private val equipmentRepository: EquipmentRepository) {
@@ -25,19 +26,19 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
     }
 
     // num값으로 조회
-    fun findByNum(num: Long): ResponseEntity<EquipmentDto> {
+    fun findByNum(num: Long): ResponseEntity<List<EquipmentDto>> {
         val entity = equipmentRepository.findByNum(num)
             ?: return ResponseEntity.notFound().build()
 
-        return ResponseEntity.ok(EquipmentDto.fromEntity(entity))
+        return ResponseEntity.ok(entity.map{ EquipmentDto.fromEntity(it)})
     }
 
     // name값으로 조회
-    fun findByName(name: String): ResponseEntity<EquipmentDto> {
+    fun findByName(name: String): ResponseEntity<List<EquipmentDto>> {
         val entity = equipmentRepository.findByName(name)
             ?: return ResponseEntity.notFound().build()
 
-        return ResponseEntity.ok(EquipmentDto.fromEntity(entity))
+        return ResponseEntity.ok(entity.map{ EquipmentDto.fromEntity(it)})
     }
 
     // 장비 등록
