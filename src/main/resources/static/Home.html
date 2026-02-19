@@ -15,24 +15,34 @@
             border-radius:10px;
             box-shadow:0 4px 10px rgba(0,0,0,0.1);
         }
+
         input { padding:6px; margin:5px; }
+
         button {
             padding:6px 12px;
             border:none;
             border-radius:6px;
             cursor:pointer;
+            color:white;
         }
-        .btn-primary { background:#3498db; color:white; }
-        .btn-danger { background:#e74c3c; color:white; }
-        .btn-warning { background:#f39c12; color:white; }
-        .btn-success { background:#2ecc71; color:white; }
 
-        table { width:100%; border-collapse:collapse; margin-top:15px; }
+        .btn-primary { background:#3498db; }
+        .btn-danger { background:#e74c3c; }
+        .btn-warning { background:#f39c12; }
+        .btn-success { background:#2ecc71; }
+
+        table {
+            width:100%;
+            border-collapse:collapse;
+            margin-top:15px;
+        }
+
         th, td {
             padding:10px;
             text-align:center;
             border-bottom:1px solid #ddd;
         }
+
         th { background:#3498db; color:white; }
 
         .modal {
@@ -42,6 +52,7 @@
             width:100%; height:100%;
             background:rgba(0,0,0,0.5);
         }
+
         .modal-content {
             background:white;
             width:300px;
@@ -59,11 +70,15 @@
 
 <div class="container">
 
-    <!-- 🔍 단건 조회 -->
+    <!-- 🔍 조회 -->
     <div class="card">
-        <h3>🔍 단건 조회</h3>
-        <input type="number" id="searchNum" placeholder="장비 번호">
-        <button class="btn-primary" onclick="getOne()">조회</button>
+        <h3>🔍 조회</h3>
+        <input type="number" id="searchNum" placeholder="번호로 조회">
+        <button class="btn-primary" onclick="getByNum()">번호 조회</button>
+
+        <input type="text" id="searchName" placeholder="이름으로 조회">
+        <button class="btn-primary" onclick="getByName()">이름 조회</button>
+
         <button onclick="loadAll()">전체 보기</button>
     </div>
 
@@ -76,7 +91,7 @@
         <button class="btn-success" onclick="createEquipment()">등록</button>
     </div>
 
-    <!-- 📋 전체 조회 -->
+    <!-- 📋 목록 -->
     <div class="card">
         <h3>📋 장비 목록</h3>
         <table>
@@ -100,112 +115,132 @@
 <div id="editModal" class="modal">
     <div class="modal-content">
         <h3>✏ 장비 수정</h3>
-        <input type="hidden" id="editNum">
+        <input type="hidden" id="editId">
+        <input type="number" id="editNum"><br>
         <input type="text" id="editName"><br>
-        <input type="text" id="editStatus"><br>
+        <input type="text" id="editStatus"><br><br>
         <button class="btn-warning" onclick="updateEquipment()">저장</button>
         <button onclick="closeModal()">취소</button>
     </div>
 </div>
 
+
 <script>
 
-    const API = "http://localhost:8080/api/equipment";
+    const API = "http://localhost:8080/api/equipments";
 
     /* ================= 전체 조회 ================= */
     function loadAll(){
-        fetch(`${API}/get`)
+        fetch(API)
             .then(res => res.json())
-            .then(renderTable)
-            .catch(()=>alert("서버 오류"));
+            .then(data => renderTable(data))
+            .catch(() => alert("전체 조회 실패"));
     }
 
-    /* ================= 단건 조회 ================= */
-    function getOne(){
+    /* ================= 번호 조회 ================= */
+    function getByNum(){
         const num = document.getElementById("searchNum").value;
+        if(!num){ alert("번호 입력하세요"); return; }
 
-        fetch(`${API}/get/${num}`)
-            .then(res=>{
+        fetch(`${API}/num/${num}`)
+            .then(res => {
                 if(!res.ok) throw new Error();
                 return res.json();
             })
-            .then(data=>{
-                renderTable([data]); // 배열로 감싸서 재사용
-            })
-            .catch(()=>alert("존재하지 않는 장비 번호입니다."));
+            .then(data => renderTable([data]))
+            .catch(() => alert("해당 번호 없음"));
     }
 
-    /* ================= 테이블 렌더링 ================= */
+    /* ================= 이름 조회 ================= */
+    function getByName(){
+        const name = document.getElementById("searchName").value;
+        if(!name){ alert("이름 입력하세요"); return; }
+
+        fetch(`${API}/name/${name}`)
+            .then(res => {
+                if(!res.ok) throw new Error();
+                return res.json();
+            })
+            .then(data => renderTable([data]))
+            .catch(() => alert("해당 이름 없음"));
+    }
+
+    /* ================= 테이블 렌더링 (안전 버전) ================= */
     function renderTable(data){
         const table = document.getElementById("equipmentTable");
-        table.innerHTML="";
+        table.innerHTML = "";
 
-        data.forEach(item=>{
-            table.innerHTML += `
-        <tr>
-            <td>${item.num}</td>
-            <td>${item.name}</td>
-            <td>${item.status}</td>
+        data.forEach(item => {
+
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+            <td>${item.num ?? ""}</td>
+            <td>${item.name ?? ""}</td>
+            <td>${item.status ?? ""}</td>
             <td>${item.deadline ?? ""}</td>
             <td>${item.startdate ?? ""}</td>
             <td>
-                <button class="btn-warning" onclick="openEditFromRow(this)">수정</button>
-                <button class="btn-danger" onclick="deleteEquipment(${item.num})">삭제</button>
+                <button class="btn-warning">수정</button>
+                <button class="btn-danger">삭제</button>
             </td>
-        </tr>`;
+        `;
+
+            const editBtn = row.querySelector(".btn-warning");
+            const deleteBtn = row.querySelector(".btn-danger");
+
+            // 🔥 UUID 안전 전달
+            editBtn.onclick = () => openEdit(
+                item.id,
+                item.num,
+                item.name,
+                item.status
+            );
+
+            deleteBtn.onclick = () => deleteEquipment(item.id);
+
+            table.appendChild(row);
         });
     }
 
     /* ================= 등록 ================= */
     function createEquipment(){
-        fetch(`${API}/post`,{
+        const num = Number(document.getElementById("newNum").value);
+        const name = document.getElementById("newName").value;
+        const status = document.getElementById("newStatus").value;
+
+        fetch(API,{
             method:"POST",
             headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({
-                num:document.getElementById("newNum").value,
-                name:document.getElementById("newName").value,
-                status:document.getElementById("newStatus").value,
-            })
+            body:JSON.stringify({ num, name, status })
         })
             .then(res=>{
-                if(res.ok){
-                    alert("등록 완료");
-                    document.getElementById("newNum").value="";
-                    document.getElementById("newName").value="";
-                    document.getElementById("newStatus").value="";
-                    loadAll();
-                } else {
-                    alert("등록 실패");
-                }
+                if(!res.ok) throw new Error();
+                alert("등록 완료");
+                loadAll();
             })
-            .catch(()=>alert("서버 오류"));
+            .catch(()=>alert("등록 실패"));
     }
 
     /* ================= 삭제 ================= */
-    function deleteEquipment(num){
+    function deleteEquipment(id){
         if(!confirm("삭제하시겠습니까?")) return;
 
-        fetch(`${API}/delete/${num}`,{method:"DELETE"})
+        fetch(`${API}/${id}`,{ method:"DELETE" })
             .then(res=>{
-                if(res.ok){
-                    alert("삭제 완료");
-                    loadAll();
-                } else {
-                    alert("삭제 실패");
-                }
+                if(!res.ok) throw new Error();
+                alert("삭제 완료");
+                loadAll();
             })
-            .catch(()=>alert("서버 오류"));
+            .catch(()=>alert("삭제 실패"));
     }
 
-    /* ================= 수정 ================= */
-    function openEditFromRow(btn){
-        const row = btn.closest("tr");
-        const cells = row.querySelectorAll("td");
-
-        document.getElementById("editNum").value = cells[0].innerText;
-        document.getElementById("editName").value = cells[1].innerText;
-        document.getElementById("editStatus").value = cells[2].innerText;
-
+    /* ================= 수정 모달 ================= */
+    function openEdit(id,num,name,status){
+        document.getElementById("editId").value = id;
+        document.getElementById("editNum").value = num;
+        document.getElementById("editName").value = name;
+        document.getElementById("editStatus").value = status;
         document.getElementById("editModal").style.display="block";
     }
 
@@ -214,32 +249,30 @@
     }
 
     function updateEquipment(){
+        const id = document.getElementById("editId").value;
         const num = document.getElementById("editNum").value;
+        const name = document.getElementById("editName").value;
+        const status = document.getElementById("editStatus").value;
 
-        fetch(`${API}/put/${num}`,{
+        fetch(`${API}/${id}`,{
             method:"PUT",
             headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({
-                name:document.getElementById("editName").value,
-                status:document.getElementById("editStatus").value,
-            })
+            body:JSON.stringify({ num, name, status })
         })
             .then(res=>{
-                if(res.ok){
-                    alert("수정 완료");
-                    closeModal();
-                    loadAll();
-                } else {
-                    alert("수정 실패");
-                }
+                if(!res.ok) throw new Error();
+                alert("수정 완료");
+                closeModal();
+                loadAll();
             })
-            .catch(()=>alert("서버 오류"));
+            .catch(()=>alert("수정 실패"));
     }
 
-    /* ================= 초기 로딩 ================= */
+    /* ================= 초기 실행 ================= */
     loadAll();
 
 </script>
+
 
 </body>
 </html>
