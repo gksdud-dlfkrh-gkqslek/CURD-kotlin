@@ -42,9 +42,13 @@ dependencies {
 kotlin {
     jvmToolchain(17)
     compilerOptions {
-        freeCompilerArgs.addAll("-Xjsr305=strict", "-Xannotation-default-target=param-property")
+        freeCompilerArgs.addAll(
+            "-Xjsr305=strict",
+            "-Xannotation-default-target=param-property"
+        )
     }
 }
+
 
 allOpen {
     annotation("jakarta.persistence.Entity")
