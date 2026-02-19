@@ -11,10 +11,10 @@ version = "0.0.1-SNAPSHOT"
 description = "CRUD-kotlin"
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
+
 
 configurations {
     compileOnly {
