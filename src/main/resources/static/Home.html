@@ -147,23 +147,39 @@
                 if(!res.ok) throw new Error();
                 return res.json();
             })
-            .then(data => renderTable([data]))
+            .then(data => {
+                if(data.length === 0){
+                    alert("해당 번호 없음");
+                    return;
+                    }
+                    renderTable(data);
+            })
             .catch(() => alert("해당 번호 없음"));
     }
 
     /* ================= 이름 조회 ================= */
     function getByName(){
         const name = document.getElementById("searchName").value;
-        if(!name){ alert("이름 입력하세요"); return; }
+        if(!name){
+            alert("이름 입력하세요");
+            return;
+        }
 
         fetch(`${API}/name/${name}`)
             .then(res => {
                 if(!res.ok) throw new Error();
                 return res.json();
             })
-            .then(data => renderTable([data]))
+            .then(data => {
+                if(data.length === 0){
+                    alert("해당 이름 없음");
+                    return;
+                }
+                renderTable(data);
+            })
             .catch(() => alert("해당 이름 없음"));
     }
+
 
     /* ================= 테이블 렌더링 (안전 버전) ================= */
     function renderTable(data){
@@ -189,7 +205,6 @@
             const editBtn = row.querySelector(".btn-warning");
             const deleteBtn = row.querySelector(".btn-danger");
 
-            // 🔥 UUID 안전 전달
             editBtn.onclick = () => openEdit(
                 item.id,
                 item.num,
