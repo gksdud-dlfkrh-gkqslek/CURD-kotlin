@@ -49,22 +49,21 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
     }
 
     //장비 수정
-    fun update(id: String, equipmentDto: EquipmentDto): String{
-        val entity = equipmentRepository.findById(id).get()
+    fun update(id: String, equipmentDto: EquipmentDto): ResponseEntity<String>{
+        val entity = equipmentRepository.findById(id).orElse(null)
+            ?: return ResponseEntity.notFound().build()
         entity.num = equipmentDto.num
         entity.name = equipmentDto.name
         entity.status = equipmentDto.status
         entity.deadline = equipmentDto.deadline
         equipmentRepository.save(entity)
-        return "정보 수정 완료"
+        return ResponseEntity.ok("정보 수정 완료")
     }
 
     // 장비 삭제
-    fun delete(id: String): Any?{
+    fun delete(id: String): String? {
         val errorcheck: EquipmentEntity? = equipmentRepository.findById(id).orElse(null)
-        if(errorcheck == null){
-            return ResponseEntity.status(404).body("장비를 찾을 수 없습니다")
-        }
+
         equipmentRepository.deleteById(id)
         return "장비 삭제 완료"
     }

@@ -33,7 +33,7 @@ class EquipmentController(val equipmentService: EquipmentService) {
 
     // name값으로 조회
     @GetMapping("{name}")
-    fun getByName(@PathVariable name: String): Any? {
+    fun getByName(@PathVariable name: String): ResponseEntity<EquipmentDto> {
         return equipmentService.findByName(name)
     }
 
@@ -45,13 +45,13 @@ class EquipmentController(val equipmentService: EquipmentService) {
 
     // 정보 수정
     @PutMapping("{id}")
-    fun put(@PathVariable id: String, @RequestBody equipmentDto: EquipmentDto): String{
+    fun put(@PathVariable id: String, @RequestBody equipmentDto: EquipmentDto): ResponseEntity<String>{
         return equipmentService.update(id,equipmentDto)
     }
 
     // 장비 정보 삭제
     @DeleteMapping("{id}")
-    fun delete(@PathVariable id: String): Any?{
+    fun delete(@PathVariable id: String): String? {
         return equipmentService.delete(id)
     }
 }
