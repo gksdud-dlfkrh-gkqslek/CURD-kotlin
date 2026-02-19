@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service
 
 @Service
 class EquipmentService(private val equipmentRepository: EquipmentRepository) {
-    fun findAll(): List<EquipmentDto> {
 
-        // 전체 조회
+    // 전체 조회
+    fun findAll(): List<EquipmentDto> {
         return equipmentRepository.findAll().map {
             EquipmentDto(
                 it.id,
