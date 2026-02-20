@@ -33,9 +33,11 @@ dependencies {
 }
 
 kotlin {
-    jvmToolchain(17)  // JVM 17로 강제 지정
     compilerOptions {
-        freeCompilerArgs.addAll("-Xjsr305=strict", "-Xannotation-default-target=param-property")
+        freeCompilerArgs.addAll(
+            "-Xjsr305=strict",
+            "-Xannotation-default-target=param-property"
+        )
     }
 }
 
