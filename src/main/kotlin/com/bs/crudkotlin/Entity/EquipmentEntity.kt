@@ -30,6 +30,9 @@ class EquipmentEntity(
     @Column(nullable = false, length = 30)
     var status: String,
 
+    @Column(nullable = false, length = 30)
+    var reserved: Boolean,
+
     @Column(nullable = true)
     var deadline: LocalDate? = null,
 

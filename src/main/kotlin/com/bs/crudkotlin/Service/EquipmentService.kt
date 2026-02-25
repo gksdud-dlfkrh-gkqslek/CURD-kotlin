@@ -20,6 +20,7 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
                 it.num,
                 it.name,
                 it.status,
+                it.reserved,
                 it.deadline,
                 it.startdate
             ) }
