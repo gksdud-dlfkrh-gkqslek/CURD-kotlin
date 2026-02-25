@@ -1,9 +1,11 @@
 package com.bs.crudkotlin.Service
 
+import com.bs.crudkotlin.DTO.LoginRequest
 import com.bs.crudkotlin.DTO.SignUpRequest
 import com.bs.crudkotlin.DTO.UserResponse
 import com.bs.crudkotlin.Entity.UserEntity
 import com.bs.crudkotlin.Repository.UserRepository
+import jakarta.servlet.http.HttpSession
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -26,5 +28,22 @@ class AuthService(
         )
         val savedUser = userRepository.save(user)
         return UserResponse.from(savedUser)
+    }
+
+    //로그인
+    fun login(request: LoginRequest, session: HttpSession): UserResponse {
+        //전화번호로 사용자 조회
+        val user = userRepository.findByPhone(request.phone)
+            ?: throw IllegalArgumentException("전화번호 또는 비밀번호가 올바르지 않습니다.")
+        //비번 검증
+        if(!passwordEncoder.matches(request.password, user.password)) {
+            throw IllegalArgumentException("전화번호 또는 비밀번호가 올바르지 않습니다.")
+        }
+        //사용자 정보 저장
+        session.setAttribute("userId", user.id)
+        session.setAttribute("userPhone", user.phone)
+        session.setAttribute("userRole", user.role.name)
+
+        return UserResponse.from(user)
     }
 }
