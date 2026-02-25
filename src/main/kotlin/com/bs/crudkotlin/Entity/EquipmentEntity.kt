@@ -22,7 +22,7 @@ class EquipmentEntity(
     val id: String = UUID.randomUUID().toString(),
 
     @Column(nullable = false, length = 30)
-    var num: Long? = null,
+    var num: Long = 0,
 
     @Column(nullable = false, length = 30)
     var name: String,
@@ -31,13 +31,12 @@ class EquipmentEntity(
     var status: String,
 
     @Column(nullable = false, length = 30)
-    var reserved: Boolean,
+    var reserved: Boolean = false,
 
     @Column(nullable = true)
     var deadline: LocalDate? = null,
 
     @CreatedDate
     @Column(nullable = true,updatable = false)
-    var startdate: LocalDate? = LocalDate.now()
-
+    var startdate: LocalDate? = null
 )
