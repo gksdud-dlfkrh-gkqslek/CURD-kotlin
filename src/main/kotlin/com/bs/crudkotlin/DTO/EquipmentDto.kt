@@ -7,16 +7,16 @@ import java.time.LocalDate
 data class EquipmentDto(
 
     val id: String? = null,
-    val num: Long?,
+    val num: Long,
     val name: String,
     val status: String,
     val reserved: Boolean = false,
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    val deadline: LocalDate?,
+    val deadline: LocalDate? = null,
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    val startdate: LocalDate?
+    val startdate: LocalDate? = null
 
 ) {
 
@@ -24,9 +24,7 @@ data class EquipmentDto(
     fun toEntity() = EquipmentEntity(
         num = num,
         name = name,
-        status = status,
-        reserved = reserved,
-        deadline = deadline
+        status = status
     )
 
     //Entity -> DTO
