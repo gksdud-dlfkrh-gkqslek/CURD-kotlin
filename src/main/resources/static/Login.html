@@ -386,7 +386,7 @@
 
             if (res.ok) {
                 showSuccess('로그인 성공! 이동 중...');
-                setTimeout(() => location.href = '/Home.html', 800);
+                setTimeout(() => location.href = '/user.html', 800);
             } else {
                 const data = await res.json().catch(() => ({}));
                 showError(data.message || '전화번호 또는 비밀번호가 올바르지 않습니다.');
