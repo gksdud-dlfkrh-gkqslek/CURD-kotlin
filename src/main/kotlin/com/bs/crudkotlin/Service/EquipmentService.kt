@@ -63,6 +63,17 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
         return ResponseEntity.ok("예약 완료")
     }
 
+    //예약 취소
+    fun cancelReserve(id: String): ResponseEntity<String> {
+        val entity = equipmentRepository.findById(id).orElse(null)
+            ?: return ResponseEntity.notFound().build()
+        entity.reserved = false
+        entity.deadline = null
+        entity.startdate = null
+        equipmentRepository.save(entity)
+        return ResponseEntity.ok("예약 취소 완료")
+    }
+
     //장비 수정
     fun update(id: String, equipmentDto: EquipmentDto): ResponseEntity<String>{
         val entity = equipmentRepository.findById(id).orElse(null)
@@ -82,4 +93,5 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
         equipmentRepository.deleteById(id)
         return "장비 삭제 완료"
     }
+
 }
