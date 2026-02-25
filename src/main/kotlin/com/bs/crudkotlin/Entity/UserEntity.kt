@@ -6,7 +6,6 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import org.hibernate.annotations.processing.Pattern
 import java.util.UUID
 
 @Entity
@@ -17,7 +16,7 @@ class UserEntity(
     val id: String = UUID.randomUUID().toString(),
 
     @Column(nullable = false, unique = true)
-    var phone: Long,
+    var phone: String,
 
     @Column(nullable = false)
     var password: String,  // 암호화된 비밀번호 저장
