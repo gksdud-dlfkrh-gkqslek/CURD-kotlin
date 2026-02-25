@@ -7,6 +7,8 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlin.collections.map
 
 @Service
@@ -51,10 +53,12 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
     }
 
     // 예약
-    fun updatereserve(id: String): ResponseEntity<String> {
+    fun updatereserve(id: String, equipmentDto: EquipmentDto): ResponseEntity<String> {
         val entity = equipmentRepository.findById(id).orElse(null)
             ?: return ResponseEntity.notFound().build()
         entity.reserved = true
+        entity.deadline = equipmentDto.deadline
+        entity.startdate = LocalDate.now()
         equipmentRepository.save(entity)
         return ResponseEntity.ok("예약 완료")
     }
