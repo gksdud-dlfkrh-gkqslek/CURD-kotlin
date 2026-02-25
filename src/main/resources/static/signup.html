@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>회원가입</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #0a1628;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .card {
+        background: #0d2444;
+        padding: 40px;
+        border-radius: 15px;
+        width: 350px;
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        border: none;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        background: #00c4ff;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #0099cc;
+    }
+
+    .alert {
+        margin-bottom: 15px;
+        font-size: 14px;
+        display: none;
+    }
+
+    .error { color: #ff8a80; }
+    .success { color: #69f0ae; }
+
+    .back {
+        margin-top: 15px;
+        text-align: center;
+        font-size: 14px;
+        cursor: pointer;
+        color: #00c4ff;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>회원가입</h2>
+
+  <div id="errorMsg" class="alert error"></div>
+  <div id="successMsg" class="alert success"></div>
+
+  <input type="text" id="name" placeholder="이름">
+  <input type="text" id="phone" placeholder="010-0000-0000">
+  <input type="password" id="password" placeholder="비밀번호">
+
+  <button onclick="signup()">가입하기</button>
+
+  <div class="back" onclick="location.href='/login.html'">
+    로그인으로 돌아가기
+  </div>
+</div>
+
+<script>
+  // 전화번호 자동 하이픈
+  document.getElementById('phone').addEventListener('input', function(e) {
+      let val = e.target.value.replace(/\D/g, '');
+      if (val.length >= 8) {
+          val = val.slice(0,3) + '-' + val.slice(3,7) + '-' + val.slice(7,11);
+      } else if (val.length >= 4) {
+          val = val.slice(0,3) + '-' + val.slice(3);
+      }
+      e.target.value = val;
+  });
+
+  function showError(msg) {
+      const el = document.getElementById('errorMsg');
+      el.textContent = msg;
+      el.style.display = 'block';
+      document.getElementById('successMsg').style.display = 'none';
+  }
+
+  function showSuccess(msg) {
+      const el = document.getElementById('successMsg');
+      el.textContent = msg;
+      el.style.display = 'block';
+      document.getElementById('errorMsg').style.display = 'none';
+  }
+
+  async function signup() {
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!name) return showError("이름을 입력해주세요.");
+      if (!phone) return showError("전화번호를 입력해주세요.");
+      if (!password) return showError("비밀번호를 입력해주세요.");
+
+      try {
+          const res = await fetch('/api/auth/signup', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name, phone, password })
+          });
+
+          if (res.ok) {
+              showSuccess("회원가입 성공! 로그인 페이지로 이동합니다.");
+              setTimeout(() => location.href = '/login.html', 1000);
+          } else {
+              const data = await res.json().catch(() => ({}));
+              showError(data.message || "회원가입 실패");
+          }
+
+      } catch (e) {
+          showError("서버 연결 실패");
+      }
+  }
+</script>
+
+</body>
+</html>
