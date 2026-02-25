@@ -46,4 +46,19 @@ class AuthService(
 
         return UserResponse.from(user)
     }
+    // 로그아웃
+    fun logout(session: HttpSession) {
+        session.invalidate()  // 세션 삭제
+    }
+
+    // 현재 로그인한 사용자 조회
+    fun getCurrentUser(session: HttpSession): UserResponse? {
+        val userId = session.getAttribute("userId") as? String
+            ?: return null
+
+        val user = userRepository.findById(userId).orElse(null)
+            ?: return null
+
+        return UserResponse.from(user)
+    }
 }

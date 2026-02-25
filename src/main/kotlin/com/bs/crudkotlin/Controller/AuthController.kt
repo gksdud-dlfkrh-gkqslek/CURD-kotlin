@@ -9,6 +9,7 @@ import com.bs.crudkotlin.Service.AuthService
 import jakarta.servlet.http.HttpSession
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -31,6 +32,22 @@ class AuthController(private val authService: AuthService) {
         @RequestBody request: LoginRequest,
         session: HttpSession): ResponseEntity<UserResponse> {
         val user = authService.login(request, session)
+        return ResponseEntity.ok(user)
+    }
+
+    //로그아웃
+    @PostMapping("/logout")
+    fun logout(session: HttpSession): ResponseEntity<Map<String, String>> {
+        authService.logout(session)
+        return ResponseEntity.ok(mapOf("message" to "로그아웃 되었습니다."))
+    }
+
+    // 내 정보 조회
+    @GetMapping("/me")
+    fun me(session: HttpSession): ResponseEntity<Any> {
+        val user = authService.getCurrentUser(session)
+            ?: return ResponseEntity.status(401).body(mapOf("error" to "로그인이 필요합니다."))
+
         return ResponseEntity.ok(user)
     }
 }
