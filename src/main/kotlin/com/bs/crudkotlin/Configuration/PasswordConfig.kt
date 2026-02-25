@@ -20,9 +20,19 @@ class PasswordConfig {
         http
             .csrf { it.disable() }
             .authorizeHttpRequests {
-                it.requestMatchers("/api/auth/**").permitAll()  // 회원가입, 로그인 허용
-                it.anyRequest().authenticated()                 // 나머지는 인증 필요
+                it
+                    .requestMatchers(
+                        "/",
+                        "/login.html",
+                        "/signup.html",
+                        "/Home.html",
+                        "/api/auth/**"
+                    ).permitAll()
+                    .anyRequest().authenticated()
             }
+            .formLogin { it.disable() }
+            .httpBasic { it.disable() }
+
         return http.build()
     }
 }
