@@ -43,6 +43,12 @@ class EquipmentController(val equipmentService: EquipmentService) {
         return equipmentService.create(equipmentDto)
     }
 
+    // 예약
+    @PutMapping("/reserve/{id}")
+    fun putreserve(@PathVariable id: String): ResponseEntity<String>{
+        return equipmentService.updatereserve(id)
+    }
+
     // 정보 수정
     @PutMapping("/{id}")
     fun put(@PathVariable id: String, @RequestBody equipmentDto: EquipmentDto): ResponseEntity<String>{

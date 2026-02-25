@@ -50,6 +50,15 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
         return ResponseEntity.ok(responseDto)
     }
 
+    // 예약
+    fun updatereserve(id: String): ResponseEntity<String> {
+        val entity = equipmentRepository.findById(id).orElse(null)
+            ?: return ResponseEntity.notFound().build()
+        entity.reserved = true
+        equipmentRepository.save(entity)
+        return ResponseEntity.ok("예약 완료")
+    }
+
     //장비 수정
     fun update(id: String, equipmentDto: EquipmentDto): ResponseEntity<String>{
         val entity = equipmentRepository.findById(id).orElse(null)
