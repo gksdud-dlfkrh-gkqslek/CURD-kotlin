@@ -11,10 +11,6 @@ data class EquipmentDto(
     val name: String,
     val status: String,
     val reserved: Boolean = false,
-
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    val deadline: LocalDate? = null,
-
     @JsonFormat(pattern = "yyyy-MM-dd")
     val startdate: LocalDate? = null
 
@@ -35,8 +31,11 @@ data class EquipmentDto(
             name = entity.name,
             status = entity.status,
             reserved = entity.reserved,
-            deadline = entity.deadline,
             startdate = entity.startdate
         )
     }
 }
+data class ReserveRequest(
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    val deadline: LocalDate
+)

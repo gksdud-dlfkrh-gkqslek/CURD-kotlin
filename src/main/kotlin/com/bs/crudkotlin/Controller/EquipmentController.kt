@@ -1,6 +1,7 @@
 package com.bs.crudkotlin.Controller
 
 import com.bs.crudkotlin.DTO.EquipmentDto
+import com.bs.crudkotlin.DTO.ReserveRequest
 import com.bs.crudkotlin.Entity.EquipmentEntity
 import com.bs.crudkotlin.Repository.EquipmentRepository
 import com.bs.crudkotlin.Service.EquipmentService
@@ -45,11 +46,11 @@ class EquipmentController(val equipmentService: EquipmentService) {
 
     // 예약
     @PutMapping("/reserve/{id}")
-    fun putreserve(@PathVariable id: String, equipmentDto: EquipmentDto): ResponseEntity<String>{
-        return equipmentService.updatereserve(id, equipmentDto)
+    fun putreserve(@PathVariable id: String, @RequestBody request: ReserveRequest): ResponseEntity<String> {
+        return equipmentService.updatereserve(id, request)
     }
 
-    //예약 취
+    //예약 취소
     @PutMapping("/cancel/{id}")
     fun cancelReserve(@PathVariable id: String): ResponseEntity<String> {
         return equipmentService.cancelReserve(id)

@@ -1,6 +1,7 @@
 package com.bs.crudkotlin.Service
 
 import com.bs.crudkotlin.DTO.EquipmentDto
+import com.bs.crudkotlin.DTO.ReserveRequest
 import com.bs.crudkotlin.Entity.EquipmentEntity
 import com.bs.crudkotlin.Repository.EquipmentRepository
 import org.springframework.data.repository.findByIdOrNull
@@ -23,7 +24,6 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
                 it.name,
                 it.status,
                 it.reserved,
-                it.deadline,
                 it.startdate
             ) }
     }
@@ -53,11 +53,11 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
     }
 
     // 예약
-    fun updatereserve(id: String, equipmentDto: EquipmentDto): ResponseEntity<String> {
+    fun updatereserve(id: String, request: ReserveRequest): ResponseEntity<String> {
         val entity = equipmentRepository.findById(id).orElse(null)
             ?: return ResponseEntity.notFound().build()
         entity.reserved = true
-        entity.deadline = equipmentDto.deadline
+        entity.deadline = request.deadline
         entity.startdate = LocalDate.now()
         equipmentRepository.save(entity)
         return ResponseEntity.ok("예약 완료")
@@ -81,7 +81,6 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
         entity.num = equipmentDto.num
         entity.name = equipmentDto.name
         entity.status = equipmentDto.status
-        entity.deadline = equipmentDto.deadline
         equipmentRepository.save(entity)
         return ResponseEntity.ok("정보 수정 완료")
     }
