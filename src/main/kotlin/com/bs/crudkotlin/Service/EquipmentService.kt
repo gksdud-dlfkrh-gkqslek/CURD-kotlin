@@ -23,8 +23,9 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
                 it.num,
                 it.name,
                 it.status,
-                it.reserved,
-                it.startdate
+                it.startdate,
+                it.deadline,
+                it.reserved
             ) }
     }
 
@@ -92,5 +93,7 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
         equipmentRepository.deleteById(id)
         return "장비 삭제 완료"
     }
+
+
 
 }

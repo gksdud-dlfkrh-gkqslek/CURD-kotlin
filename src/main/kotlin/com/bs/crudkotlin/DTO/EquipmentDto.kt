@@ -10,9 +10,11 @@ data class EquipmentDto(
     val num: Long,
     val name: String,
     val status: String,
-    val reserved: Boolean = false,
     @JsonFormat(pattern = "yyyy-MM-dd")
-    val startdate: LocalDate? = null
+    val startdate: LocalDate? = null,
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    val deadline: LocalDate?,
+    val reserved: Boolean = false
 
 ) {
 
@@ -30,8 +32,9 @@ data class EquipmentDto(
             num = entity.num,
             name = entity.name,
             status = entity.status,
-            reserved = entity.reserved,
-            startdate = entity.startdate
+            startdate = entity.startdate,
+            deadline = entity.deadline,
+            reserved = entity.reserved
         )
     }
 }

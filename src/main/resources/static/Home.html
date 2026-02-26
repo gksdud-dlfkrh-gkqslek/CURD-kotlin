@@ -648,7 +648,7 @@
       document.getElementById('userListWrap').innerHTML =
         `<div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>`;
       try {
-        const res = await fetch(`${API}/users`, { credentials: 'include' });
+        const res = await fetch(`${API}/auth/users`, { credentials: 'include' });
         if (!res.ok) throw new Error();
         allUsers = await res.json();
         renderUserTable(allUsers);
@@ -676,7 +676,7 @@
           <td><span class="mono">${u.phone}</span></td>
           <td><span class="badge ${u.role === 'ADMIN' ? 'admin' : 'user'}">${u.role}</span></td>
           <td>
-            <button class="btn-icon del" onclick="openConfirm('유저 삭제', '\"${u.name}\" 유저를 삭제하시겠습니까?', () => deleteUser('${u.id}'))">🗑</button>
+            <button class="btn-icon del" data-id="${u.id}" data-name="${u.name}" onclick="handleUserDelete(this)">🗑</button>
           </td>
         </tr>`).join('');
 
@@ -689,7 +689,7 @@
 
     async function deleteUser(id) {
       try {
-        const res = await fetch(`${API}/users/${id}`, {
+        const res = await fetch(`${API}/auth/user/${id}`, {
           method: 'DELETE',
           credentials: 'include'
         });
@@ -701,6 +701,11 @@
           toast('error', '❌ 삭제 실패');
         }
       } catch (e) { toast('error', '❌ 서버 연결 오류'); }
+    }
+    function handleUserDelete(btn) {
+        const id   = btn.dataset.id;
+        const name = btn.dataset.name;
+        openConfirm('유저 삭제', `"${name}" 유저를 삭제하시겠습니까?`, () => deleteUser(id));
     }
 
     // ══════════════════════════════════════
