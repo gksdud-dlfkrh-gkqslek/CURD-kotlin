@@ -14,7 +14,8 @@ data class EquipmentDto(
     val startdate: LocalDate? = null,
     @JsonFormat(pattern = "yyyy-MM-dd")
     val deadline: LocalDate?,
-    val reserved: Boolean = false
+    val reserved: Boolean = false,
+    val userId: String? = null,
 
 ) {
 
@@ -34,7 +35,8 @@ data class EquipmentDto(
             status = entity.status,
             startdate = entity.startdate,
             deadline = entity.deadline,
-            reserved = entity.reserved
+            reserved = entity.reserved,
+            userId = entity.userId
         )
     }
 }
