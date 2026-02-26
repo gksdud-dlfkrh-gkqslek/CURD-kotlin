@@ -599,46 +599,49 @@
     // ⑥ 예약 현황
     // ══════════════════════════════════════
     async function loadReservations() {
-      document.getElementById('reservationWrap').innerHTML =
-        `<div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>`;
-      try {
-        const [equipRes, userRes] = await Promise.all([
-          fetch(`${API}/equipments`,  { credentials: 'include' }),
-          fetch(`${API}/users`,       { credentials: 'include' })
-        ]);
-        const equipments = await equipRes.json();
-        const users      = userRes.ok ? await userRes.json() : [];
-        const reserved   = equipments.filter(e => e.reserved);
+        document.getElementById('reservationWrap').innerHTML =
+            `<div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>`;
+        try {
+            const [equipRes, userRes] = await Promise.all([
+                fetch(`${API}/equipments`, { credentials: 'include' }),
+                fetch(`${API}/auth/users`, { credentials: 'include' })
+            ]);
+            const equipments = await equipRes.json();
+            const users      = userRes.ok ? await userRes.json() : [];
+            const reserved   = equipments.filter(e => e.reserved === true || e.reserved === 1);
 
-        if (!reserved.length) {
-          document.getElementById('reservationWrap').innerHTML =
-            `<div class="empty-box"><div class="ei">📋</div><p>현재 예약된 장비가 없습니다</p></div>`;
-          return;
+            if (!reserved.length) {
+            document.getElementById('reservationWrap').innerHTML =
+                `<div class="empty-box"><div class="ei">📋</div><p>현재 예약된 장비가 없습니다</p></div>`;
+            return;
         }
 
-        const rows = reserved.map(eq => {
-          // 유저 매칭은 서버에서 userId를 내려주면 좋지만, 현재 구조상 표시 불가 시 '-' 표시
-          return `<tr>
-            <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
-            <td>${eq.num}</td>
-            <td><strong>${eq.name}</strong></td>
-            <td><span class="mono">${eq.startdate ?? '-'}</span></td>
-            <td><span class="mono">${eq.deadline ?? '-'}</span></td>
-            <td><span class="badge rsv-yes">예약중</span></td>
-          </tr>`;
-        }).join('');
+            const rows = reserved.map(eq => {
+            // userId로 유저 정보 매칭
+            const user = users.find(u => u.id === eq.userId);
+            return `<tr>
+                <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
+                <td>${eq.num}</td>
+                <td><strong>${eq.name}</strong></td>
+                <td>${user ? `<strong>${user.name}</strong>` : '<span style="color:var(--text-dim)">알 수 없음</span>'}</td>
+                <td>${user ? `<span class="mono">${user.phone}</span>` : '-'}</td>
+                <td><span class="mono">${eq.startdate ?? '-'}</span></td>
+                <td><span class="mono">${eq.deadline ?? '-'}</span></td>
+                <td><span class="badge rsv-yes">예약중</span></td>
+            </tr>`;
+            }).join('');
 
-        document.getElementById('reservationWrap').innerHTML = `
-          <table>
-            <thead><tr>
-              <th>장비 ID</th><th>번호</th><th>장비명</th><th>예약일</th><th>반납기한</th><th>상태</th>
-            </tr></thead>
-            <tbody>${rows}</tbody>
-          </table>`;
-      } catch (e) {
-        document.getElementById('reservationWrap').innerHTML =
-          `<div class="empty-box"><div class="ei">⚠️</div><p>서버 연결 실패</p></div>`;
-      }
+            document.getElementById('reservationWrap').innerHTML = `
+              <table>
+                <thead><tr>
+                  <th>장비 ID</th><th>번호</th><th>장비명</th><th>예약자</th><th>전화번호</th><th>예약일</th><th>반납기한</th><th>상태</th>
+                </tr></thead>
+                <tbody>${rows}</tbody>
+            </table>`;
+        } catch (e) {
+            document.getElementById('reservationWrap').innerHTML =
+            `<div class="empty-box"><div class="ei">⚠️</div><p>서버 연결 실패</p></div>`;
+        }
     }
 
     // ══════════════════════════════════════
