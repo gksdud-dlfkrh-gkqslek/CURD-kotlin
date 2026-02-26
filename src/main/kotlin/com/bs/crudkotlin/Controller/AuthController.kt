@@ -75,7 +75,7 @@ class AuthController(private val authService: AuthService) {
 
     // 사용자 승인
     @PutMapping("/approve/{id}")
-    fun approve(@PathVariable id: String) {
+    fun approve(@PathVariable id: String): ResponseEntity<ResponseEntity<String>?>? {
         return ResponseEntity.ok(authService.approveuser(id))
     }
 }
