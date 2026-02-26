@@ -15,19 +15,14 @@ class PasswordConfig {
     fun passwordEncoder(): PasswordEncoder {
         return BCryptPasswordEncoder()
     }
+
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .csrf { it.disable() }
             .authorizeHttpRequests {
                 it
-                    .requestMatchers(
-                        "/",
-                        "/login.html",
-                        "/signup.html",
-                        "/Home.html",
-                        "/api/auth/**"
-                    ).permitAll()
+                    .requestMatchers("/", "/**", "/api/auth/**").permitAll()
                     .anyRequest().authenticated()
             }
             .formLogin { it.disable() }

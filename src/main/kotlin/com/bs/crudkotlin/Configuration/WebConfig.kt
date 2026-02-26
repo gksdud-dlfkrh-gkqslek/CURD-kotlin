@@ -13,4 +13,5 @@ class WebConfig : WebMvcConfigurer {
                 "https://web-production-9b27c.up.railway.app"
             ).allowCredentials(true)
             .allowedMethods("GET", "POST", "PUT", "DELETE")
+    }
 }
