@@ -1,293 +1,741 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>🤿 다이빙 장비 관리</title>
-
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>관리자 페이지 — 장비 예약 시스템</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
     <style>
-        body { font-family: Arial; background:#f4f6f9; }
-        h1 { text-align:center; }
-        .container { width:80%; margin:auto; }
-        .card {
-            background:white;
-            padding:20px;
-            margin-top:20px;
-            border-radius:10px;
-            box-shadow:0 4px 10px rgba(0,0,0,0.1);
+        :root {
+          --bg:        #0d0f14;
+          --surface:   #13161f;
+          --card:      #191c28;
+          --border:    #252838;
+          --border2:   #2e3348;
+          --accent:    #4f8ef7;
+          --accent2:   #7c5cfc;
+          --accent-lt: rgba(79,142,247,.1);
+          --green:     #2ecc8a;
+          --green-bg:  rgba(46,204,138,.1);
+          --red:       #ff4f6a;
+          --red-bg:    rgba(255,79,106,.1);
+          --yellow:    #f7b731;
+          --yellow-bg: rgba(247,183,49,.1);
+          --text:      #e8eaf2;
+          --text-sub:  #b0b7d4;
+          --text-muted:#6b7294;
+          --text-dim:  #3e4260;
+          --shadow:    0 2px 8px rgba(0,0,0,.3);
+          --shadow-md: 0 8px 32px rgba(0,0,0,.4);
+          --shadow-lg: 0 20px 60px rgba(0,0,0,.6);
         }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
 
-        input { padding:6px; margin:5px; }
+        /* ── HEADER ── */
+        header{background:var(--surface);border-bottom:1px solid var(--border);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;position:sticky;top:0;z-index:100;}
+        .logo{display:flex;align-items:center;gap:.6rem;font-family:'JetBrains Mono',monospace;font-size:.88rem;font-weight:700;color:var(--accent);}
+        .logo-box{width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.8rem;}
+        .admin-chip{background:rgba(255,79,106,.12);border:1px solid rgba(255,79,106,.25);color:var(--red);border-radius:999px;padding:.15rem .6rem;font-size:.68rem;font-weight:700;letter-spacing:.05em;}
+        .header-right{display:flex;align-items:center;gap:.8rem;}
+        .btn-logout{height:30px;padding:0 .8rem;border:1px solid var(--border2);background:transparent;color:var(--text-muted);border-radius:7px;cursor:pointer;font-size:.75rem;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+        .btn-logout:hover{border-color:var(--red);color:var(--red);}
 
-        button {
-            padding:6px 12px;
-            border:none;
-            border-radius:6px;
-            cursor:pointer;
-            color:white;
-        }
+        /* ── LAYOUT ── */
+        .layout{display:grid;grid-template-columns:200px 1fr;flex:1;}
 
-        .btn-primary { background:#3498db; }
-        .btn-danger { background:#e74c3c; }
-        .btn-warning { background:#f39c12; }
-        .btn-success { background:#2ecc71; }
+        /* ── SIDEBAR ── */
+        aside{background:var(--surface);border-right:1px solid var(--border);padding:1rem .6rem;display:flex;flex-direction:column;gap:.15rem;position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto;}
+        .side-section-label{font-size:.6rem;font-weight:700;color:var(--text-dim);letter-spacing:.12em;text-transform:uppercase;padding:.6rem .6rem .3rem;}
+        .nav-item{display:flex;align-items:center;gap:.55rem;padding:.5rem .7rem;border-radius:7px;cursor:pointer;font-size:.8rem;color:var(--text-muted);transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:'Noto Sans KR',sans-serif;}
+        .nav-item:hover{background:var(--card);color:var(--text-sub);}
+        .nav-item.active{background:var(--accent-lt);color:var(--accent);font-weight:600;}
+        .nav-icon{font-size:.85rem;width:18px;text-align:center;}
 
-        table {
-            width:100%;
-            border-collapse:collapse;
-            margin-top:15px;
-        }
+        /* ── MAIN ── */
+        main{padding:1.5rem;overflow-y:auto;}
+        .section{display:none;}
+        .section.active{display:block;animation:fadeIn .2s ease;}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 
-        th, td {
-            padding:10px;
-            text-align:center;
-            border-bottom:1px solid #ddd;
-        }
+        .page-title{font-size:1.1rem;font-weight:800;margin-bottom:.25rem;}
+        .page-sub{font-size:.75rem;color:var(--text-muted);margin-bottom:1.2rem;}
 
-        th { background:#3498db; color:white; }
+        /* ── STATS ── */
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.5rem;}
+        .stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.9rem 1rem;display:flex;align-items:center;gap:.75rem;}
+        .stat-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+        .si-blue{background:rgba(79,142,247,.12);}
+        .si-green{background:rgba(46,204,138,.12);}
+        .si-yellow{background:rgba(247,183,49,.12);}
+        .si-red{background:rgba(255,79,106,.12);}
+        .stat-label{font-size:.65rem;color:var(--text-muted);margin-bottom:.15rem;}
+        .stat-val{font-size:1.35rem;font-weight:800;font-family:'JetBrains Mono',monospace;}
+        .sv-blue{color:var(--accent);}
+        .sv-green{color:var(--green);}
+        .sv-yellow{color:var(--yellow);}
+        .sv-red{color:var(--red);}
 
-        .modal {
-            display:none;
-            position:fixed;
-            top:0; left:0;
-            width:100%; height:100%;
-            background:rgba(0,0,0,0.5);
-        }
+        /* ── TOOLBAR ── */
+        .toolbar{display:flex;align-items:center;gap:.6rem;margin-bottom:.9rem;flex-wrap:wrap;}
+        .search-wrap{position:relative;}
+        .search-wrap input{height:34px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:0 .8rem 0 2rem;font-size:.78rem;font-family:'Noto Sans KR',sans-serif;color:var(--text);outline:none;transition:border-color .15s;width:180px;}
+        .search-wrap input:focus{border-color:var(--accent);}
+        .search-wrap input::placeholder{color:var(--text-dim);}
+        .search-icon{position:absolute;left:.6rem;top:50%;transform:translateY(-50%);color:var(--text-dim);font-size:.75rem;}
+        .btn-sm{height:34px;padding:0 .85rem;border-radius:8px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;display:flex;align-items:center;gap:.35rem;white-space:nowrap;}
+        .btn-primary{background:var(--accent);color:#fff;border:none;}
+        .btn-primary:hover{background:#3d7ef5;transform:translateY(-1px);}
+        .btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text-muted);}
+        .btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+        .btn-danger{background:transparent;border:1px solid rgba(255,79,106,.3);color:var(--red);}
+        .btn-danger:hover{background:var(--red-bg);}
 
-        .modal-content {
-            background:white;
-            width:300px;
-            margin:150px auto;
-            padding:20px;
-            border-radius:10px;
-            text-align:center;
-        }
+        /* ── TABLE ── */
+        .table-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+        table{width:100%;border-collapse:collapse;}
+        thead tr{background:rgba(255,255,255,.02);}
+        th{padding:.65rem 1rem;text-align:left;font-size:.65rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);white-space:nowrap;}
+        td{padding:.75rem 1rem;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle;}
+        tr:last-child td{border-bottom:none;}
+        tbody tr{transition:background .1s;}
+        tbody tr:hover td{background:rgba(255,255,255,.02);}
+        .mono{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-muted);}
+
+        .badge{display:inline-flex;align-items:center;gap:.25rem;padding:.15rem .55rem;border-radius:999px;font-size:.68rem;font-weight:600;white-space:nowrap;}
+        .badge::before{content:'●';font-size:.45rem;}
+        .badge.normal{background:var(--green-bg);color:var(--green);}
+        .badge.repair{background:var(--yellow-bg);color:var(--yellow);}
+        .badge.broken{background:var(--red-bg);color:var(--red);}
+        .badge.rsv-yes{background:var(--red-bg);color:var(--red);}
+        .badge.rsv-no{background:var(--green-bg);color:var(--green);}
+        .badge.admin{background:rgba(79,142,247,.12);color:var(--accent);}
+        .badge.user{background:rgba(46,204,138,.12);color:var(--green);}
+
+        .td-actions{display:flex;gap:.4rem;align-items:center;}
+        .btn-icon{width:28px;height:28px;border-radius:6px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;transition:all .15s;}
+        .btn-icon.edit{background:rgba(79,142,247,.1);color:var(--accent);}
+        .btn-icon.edit:hover{background:rgba(79,142,247,.2);}
+        .btn-icon.del{background:rgba(255,79,106,.1);color:var(--red);}
+        .btn-icon.del:hover{background:rgba(255,79,106,.2);}
+
+        /* ── FORM CARD ── */
+        .form-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;}
+        .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.9rem;margin-bottom:1rem;}
+        .form-group{display:flex;flex-direction:column;gap:.35rem;}
+        .form-label{font-size:.72rem;font-weight:600;color:var(--text-muted);}
+        .form-input,.form-select{height:38px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0 .85rem;font-size:.8rem;font-family:'Noto Sans KR',sans-serif;color:var(--text);outline:none;transition:border-color .15s;width:100%;}
+        .form-input:focus,.form-select:focus{border-color:var(--accent);}
+        .form-input::placeholder{color:var(--text-dim);}
+        .form-select option{background:var(--card);}
+        .form-footer{display:flex;justify-content:flex-end;gap:.6rem;}
+
+        /* ── SEARCH RESULT ── */
+        .search-result-wrap{margin-bottom:1rem;}
+        .search-bar{display:flex;gap:.6rem;margin-bottom:.8rem;flex-wrap:wrap;}
+        .search-input-group{display:flex;gap:.4rem;align-items:center;}
+        .search-label{font-size:.75rem;color:var(--text-muted);white-space:nowrap;}
+
+        /* ── LOADING / EMPTY ── */
+        .loading-box{display:flex;align-items:center;justify-content:center;padding:3rem;color:var(--text-muted);font-size:.8rem;gap:.5rem;}
+        .spinner{width:15px;height:15px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .empty-box{text-align:center;padding:3rem;color:var(--text-muted);}
+        .empty-box .ei{font-size:2rem;margin-bottom:.5rem;}
+        .empty-box p{font-size:.78rem;}
+
+        /* ── MODAL ── */
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:300;align-items:center;justify-content:center;}
+        .modal-overlay.show{display:flex;}
+        .modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.75rem;width:100%;max-width:420px;box-shadow:var(--shadow-lg);animation:modalIn .25s cubic-bezier(.34,1.56,.64,1);}
+        @keyframes modalIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
+        .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+        .modal-title{font-size:.95rem;font-weight:800;}
+        .modal-close{width:26px;height:26px;border:none;background:var(--border);border-radius:6px;cursor:pointer;color:var(--text-muted);font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+        .modal-close:hover{background:var(--border2);color:var(--text);}
+        .modal-form{display:flex;flex-direction:column;gap:.85rem;}
+        .modal-footer{display:flex;gap:.6rem;margin-top:1.25rem;}
+        .btn-modal-cancel{flex:1;height:38px;border:1px solid var(--border2);background:transparent;color:var(--text-muted);border-radius:8px;cursor:pointer;font-size:.82rem;font-family:'Noto Sans KR',sans-serif;}
+        .btn-modal-confirm{flex:2;height:38px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:700;font-family:'Noto Sans KR',sans-serif;}
+        .btn-modal-confirm:hover{background:#3d7ef5;}
+        .btn-modal-danger{flex:2;height:38px;background:var(--red);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:700;font-family:'Noto Sans KR',sans-serif;}
+
+        /* confirm modal */
+        .confirm-modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.75rem;width:100%;max-width:320px;text-align:center;box-shadow:var(--shadow-lg);animation:modalIn .25s cubic-bezier(.34,1.56,.64,1);}
+        .confirm-icon{font-size:2rem;margin-bottom:.7rem;}
+        .confirm-title{font-size:.95rem;font-weight:800;margin-bottom:.3rem;}
+        .confirm-desc{font-size:.78rem;color:var(--text-muted);margin-bottom:1.2rem;line-height:1.6;}
+        .confirm-btns{display:flex;gap:.6rem;}
+        .btn-no{flex:1;height:36px;border:1px solid var(--border2);background:transparent;color:var(--text-muted);border-radius:8px;cursor:pointer;font-size:.8rem;font-family:'Noto Sans KR',sans-serif;}
+        .btn-yes{flex:1;height:36px;background:var(--red);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:700;font-family:'Noto Sans KR',sans-serif;}
+
+        /* ── TOAST ── */
+        .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.65rem 1rem;font-size:.78rem;box-shadow:var(--shadow-md);display:flex;align-items:center;gap:.45rem;transform:translateY(12px);opacity:0;transition:all .25s cubic-bezier(.34,1.56,.64,1);z-index:999;pointer-events:none;}
+        .toast.show{opacity:1;transform:translateY(0);}
+        .toast.success{border-color:rgba(46,204,138,.3);color:var(--green);}
+        .toast.error{border-color:rgba(255,79,106,.3);color:var(--red);}
+        .toast.info{border-color:rgba(79,142,247,.3);color:var(--accent);}
+
+        /* section divider */
+        .section-divider{height:1px;background:var(--border);margin:1.25rem 0;}
+        .section-subtitle{font-size:.8rem;font-weight:700;color:var(--text-sub);margin-bottom:.75rem;display:flex;align-items:center;gap:.4rem;}
     </style>
 </head>
-
 <body>
 
-<h1>🤿 다이빙 장비 관리 시스템</h1>
-
-<div class="container">
-
-    <!-- 🔍 조회 -->
-    <div class="card">
-        <h3>🔍 조회</h3>
-        <input type="number" id="searchNum" placeholder="번호로 조회">
-        <button class="btn-primary" onclick="getByNum()">번호 조회</button>
-
-        <input type="text" id="searchName" placeholder="이름으로 조회">
-        <button class="btn-primary" onclick="getByName()">이름 조회</button>
-
-        <button onclick="loadAll()">전체 보기</button>
-    </div>
-
-    <!-- ➕ 등록 -->
-    <div class="card">
-        <h3>➕ 장비 등록</h3>
-        <input type="number" id="newNum" placeholder="번호">
-        <input type="text" id="newName" placeholder="이름">
-        <input type="text" id="newStatus" placeholder="상태">
-        <button class="btn-success" onclick="createEquipment()">등록</button>
-    </div>
-
-    <!-- 📋 목록 -->
-    <div class="card">
-        <h3>📋 장비 목록</h3>
-        <table>
-            <thead>
-            <tr>
-                <th>번호</th>
-                <th>이름</th>
-                <th>상태</th>
-                <th>반납일</th>
-                <th>예약일</th>
-                <th>관리</th>
-            </tr>
-            </thead>
-            <tbody id="equipmentTable"></tbody>
-        </table>
-    </div>
-
-</div>
-
-<!-- ✏ 수정 모달 -->
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <h3>✏ 장비 수정</h3>
-        <input type="hidden" id="editId">
-        <input type="number" id="editNum"><br>
-        <input type="text" id="editName"><br>
-        <input type="text" id="editStatus"><br><br>
-        <button class="btn-warning" onclick="updateEquipment()">저장</button>
-        <button onclick="closeModal()">취소</button>
+<!-- 수정 모달 -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">✏️ 장비 정보 수정</div>
+            <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+        </div>
+        <div class="modal-form">
+            <input type="hidden" id="editId"/>
+            <div class="form-group">
+                <label class="form-label">번호 (num)</label>
+                <input type="number" class="form-input" id="editNum" placeholder="장비 번호"/>
+            </div>
+            <div class="form-group">
+                <label class="form-label">장비명 (name)</label>
+                <input type="text" class="form-input" id="editName" placeholder="장비명"/>
+            </div>
+            <div class="form-group">
+                <label class="form-label">상태 (status)</label>
+                <select class="form-select" id="editStatus">
+                    <option value="정상">정상</option>
+                    <option value="수리">수리</option>
+                    <option value="고장">고장</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal-cancel" onclick="closeModal('editModal')">취소</button>
+            <button class="btn-modal-confirm" onclick="submitEdit()">수정 완료</button>
+        </div>
     </div>
 </div>
 
+<!-- 삭제 확인 모달 -->
+<div class="modal-overlay" id="confirmModal">
+    <div class="confirm-modal">
+        <div class="confirm-icon" id="confirmIcon">⚠️</div>
+        <div class="confirm-title" id="confirmTitle">삭제하시겠습니까?</div>
+        <div class="confirm-desc"  id="confirmDesc">이 작업은 되돌릴 수 없습니다.</div>
+        <div class="confirm-btns">
+            <button class="btn-no"  onclick="closeModal('confirmModal')">취소</button>
+            <button class="btn-yes" id="confirmYesBtn">삭제</button>
+        </div>
+    </div>
+</div>
+
+<!-- Header -->
+<header>
+    <div class="logo">
+        <div class="logo-box">⚙</div>
+        EQUIP·ADMIN
+        <span class="admin-chip">ADMIN</span>
+    </div>
+    <div class="header-right">
+        <button class="btn-logout" onclick="doLogout()">로그아웃</button>
+    </div>
+</header>
+
+<div class="layout">
+    <!-- Sidebar -->
+    <aside>
+        <div class="side-section-label">장비 관리</div>
+        <button class="nav-item active" id="nav-equipment-list"   onclick="switchTab('equipment-list')"><span class="nav-icon">🖥</span>전체 장비 조회</button>
+        <button class="nav-item"        id="nav-equipment-search" onclick="switchTab('equipment-search')"><span class="nav-icon">🔍</span>장비 단건 조회</button>
+        <button class="nav-item"        id="nav-equipment-add"    onclick="switchTab('equipment-add')"><span class="nav-icon">➕</span>장비 등록</button>
+        <div class="side-section-label">예약 관리</div>
+        <button class="nav-item"        id="nav-reservations"     onclick="switchTab('reservations')"><span class="nav-icon">📌</span>예약 현황</button>
+        <div class="side-section-label">사용자 관리</div>
+        <button class="nav-item"        id="nav-users"            onclick="switchTab('users')"><span class="nav-icon">👥</span>유저 조회</button>
+    </aside>
+
+    <!-- Main -->
+    <main>
+
+        <!-- ① 전체 장비 조회 -->
+        <div class="section active" id="section-equipment-list">
+            <div class="page-title">전체 장비 목록</div>
+            <div class="page-sub">등록된 모든 장비를 조회하고 수정·삭제할 수 있습니다</div>
+
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-icon si-blue">🖥</div><div><div class="stat-label">전체</div><div class="stat-val sv-blue" id="sTotal">-</div></div></div>
+                <div class="stat-card"><div class="stat-icon si-green">✅</div><div><div class="stat-label">예약가능</div><div class="stat-val sv-green" id="sAvail">-</div></div></div>
+                <div class="stat-card"><div class="stat-icon si-yellow">📌</div><div><div class="stat-label">예약됨</div><div class="stat-val sv-yellow" id="sReserved">-</div></div></div>
+                <div class="stat-card"><div class="stat-icon si-red">🔧</div><div><div class="stat-label">수리/고장</div><div class="stat-val sv-red" id="sBroken">-</div></div></div>
+            </div>
+
+            <div class="toolbar">
+                <div class="search-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="listSearch" placeholder="장비명 검색..." oninput="filterEquipList()"/>
+                </div>
+                <button class="btn-sm btn-outline" onclick="loadEquipments()">↺ 새로고침</button>
+            </div>
+
+            <div class="table-wrap" id="equipListWrap">
+                <div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>
+            </div>
+        </div>
+
+        <!-- ② 단건 조회 -->
+        <div class="section" id="section-equipment-search">
+            <div class="page-title">장비 단건 조회</div>
+            <div class="page-sub">번호(num) 또는 이름(name)으로 장비를 검색합니다</div>
+
+            <div class="form-card" style="margin-bottom:1rem;">
+                <div class="search-bar">
+                    <div class="search-input-group">
+                        <span class="search-label">번호</span>
+                        <input type="number" class="form-input" id="searchByNum" placeholder="예: 1" style="width:120px;"/>
+                        <button class="btn-sm btn-primary" onclick="searchByNum()">검색</button>
+                    </div>
+                    <div style="color:var(--text-dim);font-size:.8rem;display:flex;align-items:center;">또는</div>
+                    <div class="search-input-group">
+                        <span class="search-label">이름</span>
+                        <input type="text" class="form-input" id="searchByName" placeholder="예: 노트북" style="width:140px;"/>
+                        <button class="btn-sm btn-primary" onclick="searchByName()">검색</button>
+                    </div>
+                    <button class="btn-sm btn-outline" onclick="clearSearchResult()">초기화</button>
+                </div>
+            </div>
+
+            <div class="table-wrap" id="searchResultWrap">
+                <div class="empty-box"><div class="ei">🔍</div><p>번호 또는 이름으로 검색하세요</p></div>
+            </div>
+        </div>
+
+        <!-- ③ 장비 등록 -->
+        <div class="section" id="section-equipment-add">
+            <div class="page-title">장비 등록</div>
+            <div class="page-sub">새 장비를 등록합니다</div>
+
+            <div class="form-card">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">번호 (num) *</label>
+                        <input type="number" class="form-input" id="addNum" placeholder="장비 번호"/>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">장비명 (name) *</label>
+                        <input type="text" class="form-input" id="addName" placeholder="장비명 입력"/>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">상태 (status) *</label>
+                        <select class="form-select" id="addStatus">
+                            <option value="정상">정상</option>
+                            <option value="수리">수리</option>
+                            <option value="고장">고장</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-footer">
+                    <button class="btn-sm btn-outline" onclick="clearAddForm()">초기화</button>
+                    <button class="btn-sm btn-primary" onclick="addEquipment()">➕ 장비 등록</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ④ 예약 현황 -->
+        <div class="section" id="section-reservations">
+            <div class="page-title">예약 현황</div>
+            <div class="page-sub">현재 예약된 장비 목록입니다 (예약일 · 반납기한 포함)</div>
+
+            <div class="toolbar">
+                <button class="btn-sm btn-outline" onclick="loadReservations()">↺ 새로고침</button>
+            </div>
+
+            <div class="table-wrap" id="reservationWrap">
+                <div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>
+            </div>
+        </div>
+
+        <!-- ⑤ 유저 조회 -->
+        <div class="section" id="section-users">
+            <div class="page-title">유저 관리</div>
+            <div class="page-sub">가입된 사용자 목록을 조회하고 삭제할 수 있습니다</div>
+
+            <div class="toolbar">
+                <div class="search-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="userSearch" placeholder="이름 검색..." oninput="filterUserList()"/>
+                </div>
+                <button class="btn-sm btn-outline" onclick="loadUsers()">↺ 새로고침</button>
+            </div>
+
+            <div class="table-wrap" id="userListWrap">
+                <div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
+    const API = 'http://localhost:8080/api';
+    let allEquipments = [];
+    let allUsers      = [];
+    let pendingAction = null; // 확인 모달 콜백
 
-    const API = "http://localhost:8080/api/equipments";
+    // ── 탭 전환
+    function switchTab(tab) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('section-' + tab).classList.add('active');
+      document.getElementById('nav-' + tab).classList.add('active');
 
-    /* ================= 전체 조회 ================= */
-    function loadAll(){
-        fetch(API)
-            .then(res => res.json())
-            .then(data => renderTable(data))
-            .catch(() => alert("전체 조회 실패"));
+      if (tab === 'equipment-list') loadEquipments();
+      if (tab === 'reservations')   loadReservations();
+      if (tab === 'users')          loadUsers();
     }
 
-    /* ================= 번호 조회 ================= */
-    function getByNum(){
-        const num = document.getElementById("searchNum").value;
-        if(!num){ alert("번호 입력하세요"); return; }
+    // ── 초기 로드
+    window.onload = () => {
+      loadEquipments();
+      loadUsers();
+    };
 
-        fetch(`${API}/num/${num}`)
-            .then(res => {
-                if(!res.ok) throw new Error();
-                return res.json();
-            })
-            .then(data => {
-                if(data.length === 0){
-                    alert("해당 번호 없음");
-                    return;
-                    }
-                    renderTable(data);
-            })
-            .catch(() => alert("해당 번호 없음"));
+    // ══════════════════════════════════════
+    // ① 전체 장비 조회
+    // ══════════════════════════════════════
+    async function loadEquipments() {
+      document.getElementById('equipListWrap').innerHTML =
+        `<div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>`;
+      try {
+        const res = await fetch(`${API}/equipments`, { credentials: 'include' });
+        allEquipments = await res.json();
+        updateStats();
+        renderEquipTable(allEquipments, 'equipListWrap', true);
+      } catch (e) {
+        document.getElementById('equipListWrap').innerHTML =
+          `<div class="empty-box"><div class="ei">⚠️</div><p>서버 연결 실패</p></div>`;
+      }
     }
 
-    /* ================= 이름 조회 ================= */
-    function getByName(){
-        const name = document.getElementById("searchName").value;
-        if(!name){
-            alert("이름 입력하세요");
-            return;
+    function updateStats() {
+      const total    = allEquipments.length;
+      const reserved = allEquipments.filter(e => e.reserved).length;
+      const broken   = allEquipments.filter(e => e.status !== '정상').length;
+      document.getElementById('sTotal').textContent    = total;
+      document.getElementById('sAvail').textContent    = total - reserved;
+      document.getElementById('sReserved').textContent = reserved;
+      document.getElementById('sBroken').textContent   = broken;
+    }
+
+    function filterEquipList() {
+      const q = document.getElementById('listSearch').value.toLowerCase();
+      renderEquipTable(allEquipments.filter(e => e.name.toLowerCase().includes(q)), 'equipListWrap', true);
+    }
+
+    function renderEquipTable(list, wrapperId, showActions) {
+      const wrap = document.getElementById(wrapperId);
+      if (!list.length) {
+        wrap.innerHTML = `<div class="empty-box"><div class="ei">📭</div><p>장비가 없습니다</p></div>`;
+        return;
+      }
+      const rows = list.map(eq => {
+        const sc = eq.status === '정상' ? 'normal' : eq.status === '수리' ? 'repair' : 'broken';
+        const actions = showActions ? `
+          <div class="td-actions">
+            ${eq.reserved
+                ? `<span style="font-size:.7rem;color:var(--text-dim);">예약중</span>`
+                : `<button class="btn-icon edit" onclick="openEditModal('${eq.id}')">✏️</button>
+                    <button class="btn-icon del" data-id="${eq.id}" data-name="${eq.name}" onclick="handleDelete(this)">🗑</button>`
+            }
+          </div>` : '';
+        return `<tr>
+          <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
+          <td>${eq.num}</td>
+          <td><strong>${eq.name}</strong></td>
+          <td><span class="badge ${sc}">${eq.status}</span></td>
+          <td><span class="badge ${eq.reserved ? 'rsv-yes' : 'rsv-no'}">${eq.reserved ? '예약됨' : '가능'}</span></td>
+          <td><span class="mono">${eq.startdate ?? '-'}</span></td>
+          <td><span class="mono">${eq.deadline ?? '-'}</span></td>
+          ${showActions ? `<td>${actions}</td>` : ''}
+        </tr>`;
+      }).join('');
+
+      wrap.innerHTML = `
+        <table>
+          <thead><tr>
+            <th>ID</th><th>번호</th><th>장비명</th><th>상태</th><th>예약</th><th>예약일</th><th>반납기한</th>
+            ${showActions ? '<th>관리</th>' : ''}
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+    }
+
+    // ══════════════════════════════════════
+    // ② 단건 조회
+    // ══════════════════════════════════════
+    async function searchByNum() {
+      const num = document.getElementById('searchByNum').value;
+      if (!num) { toast('error', '번호를 입력해주세요.'); return; }
+      try {
+        const res = await fetch(`${API}/equipments/num/${num}`, { credentials: 'include' });
+        if (!res.ok) { document.getElementById('searchResultWrap').innerHTML = `<div class="empty-box"><div class="ei">🔍</div><p>해당 번호의 장비가 없습니다</p></div>`; return; }
+        const data = await res.json();
+        renderEquipTable(Array.isArray(data) ? data : [data], 'searchResultWrap', false);
+      } catch (e) { toast('error', '서버 연결 오류'); }
+    }
+
+    async function searchByName() {
+      const name = document.getElementById('searchByName').value.trim();
+      if (!name) { toast('error', '이름을 입력해주세요.'); return; }
+      try {
+        const res = await fetch(`${API}/equipments/name/${encodeURIComponent(name)}`, { credentials: 'include' });
+        if (!res.ok) { document.getElementById('searchResultWrap').innerHTML = `<div class="empty-box"><div class="ei">🔍</div><p>해당 이름의 장비가 없습니다</p></div>`; return; }
+        const data = await res.json();
+        renderEquipTable(Array.isArray(data) ? data : [data], 'searchResultWrap', false);
+      } catch (e) { toast('error', '서버 연결 오류'); }
+    }
+
+    function clearSearchResult() {
+      document.getElementById('searchByNum').value  = '';
+      document.getElementById('searchByName').value = '';
+      document.getElementById('searchResultWrap').innerHTML =
+        `<div class="empty-box"><div class="ei">🔍</div><p>번호 또는 이름으로 검색하세요</p></div>`;
+    }
+
+    // ══════════════════════════════════════
+    // ③ 장비 등록
+    // ══════════════════════════════════════
+    async function addEquipment() {
+      const num    = document.getElementById('addNum').value;
+      const name   = document.getElementById('addName').value.trim();
+      const status = document.getElementById('addStatus').value;
+      if (!num || !name) { toast('error', '번호와 장비명을 입력해주세요.'); return; }
+      try {
+        const res = await fetch(`${API}/equipments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ num: Number(num), name, status })
+        });
+        if (res.ok) {
+          toast('success', `✅ "${name}" 장비가 등록되었습니다.`);
+          clearAddForm();
+          await loadEquipments();
+        } else {
+          toast('error', '❌ 등록에 실패했습니다.');
+        }
+      } catch (e) { toast('error', '❌ 서버 연결 오류'); }
+    }
+
+    function clearAddForm() {
+      document.getElementById('addNum').value    = '';
+      document.getElementById('addName').value   = '';
+      document.getElementById('addStatus').value = '정상';
+    }
+
+    // ══════════════════════════════════════
+    // ④ 수정
+    // ══════════════════════════════════════
+    function openEditModal(id) {
+      const eq = allEquipments.find(e => e.id === id);
+      if (!eq) return;
+      document.getElementById('editId').value     = id;
+      document.getElementById('editNum').value    = eq.num;
+      document.getElementById('editName').value   = eq.name;
+      document.getElementById('editStatus').value = eq.status;
+      openModal('editModal');
+    }
+
+    async function submitEdit() {
+      const id     = document.getElementById('editId').value;
+      const num    = document.getElementById('editNum').value;
+      const name   = document.getElementById('editName').value.trim();
+      const status = document.getElementById('editStatus').value;
+      if (!num || !name) { toast('error', '번호와 장비명을 입력해주세요.'); return; }
+      try {
+        const res = await fetch(`${API}/equipments/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ num: Number(num), name, status })
+        });
+        if (res.ok) {
+          toast('success', `✅ "${name}" 수정 완료`);
+          closeModal('editModal');
+          await loadEquipments();
+        } else {
+          toast('error', '❌ 수정 실패');
+        }
+      } catch (e) { toast('error', '❌ 서버 연결 오류'); }
+    }
+
+    // ══════════════════════════════════════
+    // ⑤ 장비 삭제
+    // ══════════════════════════════════════
+    async function deleteEquipment(id) {
+      try {
+        const res = await fetch(`${API}/equipments/${id}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+        if (res.ok) {
+          toast('info', '🗑 장비가 삭제되었습니다.');
+          closeModal('confirmModal');
+          await loadEquipments();
+        } else {
+          toast('error', '❌ 삭제 실패');
+        }
+      } catch (e) { toast('error', '❌ 서버 연결 오류'); }
+    }
+
+    function handleDelete(btn) {
+        const id   = btn.dataset.id;
+        const name = btn.dataset.name;
+        openConfirm('장비 삭제', `"${name}" 장비를 삭제하시겠습니까?`, () => deleteEquipment(id));
+    }
+
+    // ══════════════════════════════════════
+    // ⑥ 예약 현황
+    // ══════════════════════════════════════
+    async function loadReservations() {
+      document.getElementById('reservationWrap').innerHTML =
+        `<div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>`;
+      try {
+        const [equipRes, userRes] = await Promise.all([
+          fetch(`${API}/equipments`,  { credentials: 'include' }),
+          fetch(`${API}/users`,       { credentials: 'include' })
+        ]);
+        const equipments = await equipRes.json();
+        const users      = userRes.ok ? await userRes.json() : [];
+        const reserved   = equipments.filter(e => e.reserved);
+
+        if (!reserved.length) {
+          document.getElementById('reservationWrap').innerHTML =
+            `<div class="empty-box"><div class="ei">📋</div><p>현재 예약된 장비가 없습니다</p></div>`;
+          return;
         }
 
-        fetch(`${API}/name/${name}`)
-            .then(res => {
-                if(!res.ok) throw new Error();
-                return res.json();
-            })
-            .then(data => {
-                if(data.length === 0){
-                    alert("해당 이름 없음");
-                    return;
-                }
-                renderTable(data);
-            })
-            .catch(() => alert("해당 이름 없음"));
+        const rows = reserved.map(eq => {
+          // 유저 매칭은 서버에서 userId를 내려주면 좋지만, 현재 구조상 표시 불가 시 '-' 표시
+          return `<tr>
+            <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
+            <td>${eq.num}</td>
+            <td><strong>${eq.name}</strong></td>
+            <td><span class="mono">${eq.startdate ?? '-'}</span></td>
+            <td><span class="mono">${eq.deadline ?? '-'}</span></td>
+            <td><span class="badge rsv-yes">예약중</span></td>
+          </tr>`;
+        }).join('');
+
+        document.getElementById('reservationWrap').innerHTML = `
+          <table>
+            <thead><tr>
+              <th>장비 ID</th><th>번호</th><th>장비명</th><th>예약일</th><th>반납기한</th><th>상태</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>`;
+      } catch (e) {
+        document.getElementById('reservationWrap').innerHTML =
+          `<div class="empty-box"><div class="ei">⚠️</div><p>서버 연결 실패</p></div>`;
+      }
     }
 
+    // ══════════════════════════════════════
+    // ⑦ 유저 조회 & 삭제
+    // ══════════════════════════════════════
+    async function loadUsers() {
+      document.getElementById('userListWrap').innerHTML =
+        `<div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>`;
+      try {
+        const res = await fetch(`${API}/users`, { credentials: 'include' });
+        if (!res.ok) throw new Error();
+        allUsers = await res.json();
+        renderUserTable(allUsers);
+      } catch (e) {
+        document.getElementById('userListWrap').innerHTML =
+          `<div class="empty-box"><div class="ei">⚠️</div><p>유저 목록을 불러올 수 없습니다<br><small>GET /api/users 엔드포인트가 필요합니다</small></p></div>`;
+      }
+    }
 
-    /* ================= 테이블 렌더링 (안전 버전) ================= */
-    function renderTable(data){
-        const table = document.getElementById("equipmentTable");
-        table.innerHTML = "";
+    function filterUserList() {
+      const q = document.getElementById('userSearch').value.toLowerCase();
+      renderUserTable(allUsers.filter(u => u.name?.toLowerCase().includes(q) || u.phone?.includes(q)));
+    }
 
-        data.forEach(item => {
+    function renderUserTable(list) {
+      if (!list.length) {
+        document.getElementById('userListWrap').innerHTML =
+          `<div class="empty-box"><div class="ei">👥</div><p>유저가 없습니다</p></div>`;
+        return;
+      }
+      const rows = list.map(u => `
+        <tr>
+          <td><span class="mono">${u.id?.slice(0,8)}…</span></td>
+          <td><strong>${u.name}</strong></td>
+          <td><span class="mono">${u.phone}</span></td>
+          <td><span class="badge ${u.role === 'ADMIN' ? 'admin' : 'user'}">${u.role}</span></td>
+          <td>
+            <button class="btn-icon del" onclick="openConfirm('유저 삭제', '\"${u.name}\" 유저를 삭제하시겠습니까?', () => deleteUser('${u.id}'))">🗑</button>
+          </td>
+        </tr>`).join('');
 
-            const row = document.createElement("tr");
+      document.getElementById('userListWrap').innerHTML = `
+        <table>
+          <thead><tr><th>ID</th><th>이름</th><th>전화번호</th><th>권한</th><th>관리</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+    }
 
-            row.innerHTML = `
-            <td>${item.num ?? ""}</td>
-            <td>${item.name ?? ""}</td>
-            <td>${item.status ?? ""}</td>
-            <td>${item.deadline ?? ""}</td>
-            <td>${item.startdate ?? ""}</td>
-            <td>
-                <button class="btn-warning">수정</button>
-                <button class="btn-danger">삭제</button>
-            </td>
-        `;
-
-            const editBtn = row.querySelector(".btn-warning");
-            const deleteBtn = row.querySelector(".btn-danger");
-
-            editBtn.onclick = () => openEdit(
-                item.id,
-                item.num,
-                item.name,
-                item.status
-            );
-
-            deleteBtn.onclick = () => deleteEquipment(item.id);
-
-            table.appendChild(row);
+    async function deleteUser(id) {
+      try {
+        const res = await fetch(`${API}/users/${id}`, {
+          method: 'DELETE',
+          credentials: 'include'
         });
+        if (res.ok) {
+          toast('info', '🗑 유저가 삭제되었습니다.');
+          closeModal('confirmModal');
+          await loadUsers();
+        } else {
+          toast('error', '❌ 삭제 실패');
+        }
+      } catch (e) { toast('error', '❌ 서버 연결 오류'); }
     }
 
-    /* ================= 등록 ================= */
-    function createEquipment(){
-        const num = Number(document.getElementById("newNum").value);
-        const name = document.getElementById("newName").value;
-        const status = document.getElementById("newStatus").value;
+    // ══════════════════════════════════════
+    // 공통 유틸
+    // ══════════════════════════════════════
+    function openModal(id)  { document.getElementById(id).classList.add('show'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
-        fetch(API,{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({ num, name, status })
-        })
-            .then(res=>{
-                if(!res.ok) throw new Error();
-                alert("등록 완료");
-                loadAll();
-            })
-            .catch(()=>alert("등록 실패"));
+    function openConfirm(title, desc, callback) {
+      document.getElementById('confirmTitle').textContent = title;
+      document.getElementById('confirmDesc').textContent  = desc;
+      pendingAction = callback;
+      document.getElementById('confirmYesBtn').onclick = () => { if (pendingAction) pendingAction(); };
+      openModal('confirmModal');
     }
 
-    /* ================= 삭제 ================= */
-    function deleteEquipment(id){
-        if(!confirm("삭제하시겠습니까?")) return;
-
-        fetch(`${API}/${id}`,{ method:"DELETE" })
-            .then(res=>{
-                if(!res.ok) throw new Error();
-                alert("삭제 완료");
-                loadAll();
-            })
-            .catch(()=>alert("삭제 실패"));
+    async function doLogout() {
+      try { await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'include' }); } catch (e) {}
+      location.href = '/login.html';
     }
 
-    /* ================= 수정 모달 ================= */
-    function openEdit(id,num,name,status){
-        document.getElementById("editId").value = id;
-        document.getElementById("editNum").value = num;
-        document.getElementById("editName").value = name;
-        document.getElementById("editStatus").value = status;
-        document.getElementById("editModal").style.display="block";
+    function toast(type, msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className   = `toast ${type} show`;
+      clearTimeout(el._t);
+      el._t = setTimeout(() => el.classList.remove('show'), 3000);
     }
 
-    function closeModal(){
-        document.getElementById("editModal").style.display="none";
-    }
-
-    function updateEquipment(){
-        const id = document.getElementById("editId").value;
-        const num = document.getElementById("editNum").value;
-        const name = document.getElementById("editName").value;
-        const status = document.getElementById("editStatus").value;
-
-        fetch(`${API}/${id}`,{
-            method:"PUT",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({ num, name, status })
-        })
-            .then(res=>{
-                if(!res.ok) throw new Error();
-                alert("수정 완료");
-                closeModal();
-                loadAll();
-            })
-            .catch(()=>alert("수정 실패"));
-    }
-
-    /* ================= 초기 실행 ================= */
-    loadAll();
-
+    // 모달 외부 클릭 닫기
+    ['editModal','confirmModal'].forEach(id => {
+      document.getElementById(id).addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeModal(id);
+      });
+    });
 </script>
-
-
 </body>
 </html>
