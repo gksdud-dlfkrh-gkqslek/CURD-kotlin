@@ -106,4 +106,13 @@ class AuthService(
         userRepository.save(user)
         return ResponseEntity.ok("승인 완료")
     }
+
+    // 사용자 거절
+    fun rejectuser(id: String): ResponseEntity<String>{
+        val user = userRepository.findById(id).orElse(null)
+            ?: return ResponseEntity.notFound().build()
+        user.approvalStatus = ApprovalStatus.REJECTED
+        userRepository.save(user)
+        return ResponseEntity.ok("승인 거")
+    }
 }

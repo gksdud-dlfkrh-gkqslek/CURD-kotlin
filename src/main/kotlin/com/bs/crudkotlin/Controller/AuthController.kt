@@ -78,4 +78,10 @@ class AuthController(private val authService: AuthService) {
     fun approve(@PathVariable id: String): ResponseEntity<ResponseEntity<String>?>? {
         return ResponseEntity.ok(authService.approveuser(id))
     }
+
+    // 사용자 거절
+    @PutMapping("/reject/{id}")
+    fun reject(@PathVariable id: String): ResponseEntity<ResponseEntity<String>?>? {
+        return ResponseEntity.ok(authService.rejectuser(id))
+    }
 }
