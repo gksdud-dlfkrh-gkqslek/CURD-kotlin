@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>장비 예약 시스템</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:          #f0f2f7;
+      --surface:     #ffffff;
+      --border:      #e2e6f0;
+      --border2:     #cdd2e4;
+      --accent:      #2563eb;
+      --accent-lt:   #eff4ff;
+      --accent2:     #7c3aed;
+      --green:       #059669;
+      --green-bg:    #ecfdf5;
+      --red:         #dc2626;
+      --red-bg:      #fef2f2;
+      --yellow:      #d97706;
+      --yellow-bg:   #fffbeb;
+      --text:        #111827;
+      --text-sub:    #374151;
+      --text-muted:  #6b7280;
+      --text-dim:    #9ca3af;
+      --shadow:      0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.04);
+      --shadow-md:   0 4px 12px rgba(0,0,0,.10),0 8px 32px rgba(0,0,0,.06);
+      --shadow-lg:   0 12px 40px rgba(0,0,0,.15);
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+    /* ── HEADER ── */
+    header{background:var(--surface);border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 var(--border);}
+    .logo{display:flex;align-items:center;gap:.5rem;font-family:'JetBrains Mono',monospace;font-size:.9rem;font-weight:600;color:var(--accent);}
+    .logo-icon{width:28px;height:28px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.85rem;}
+    .header-right{display:flex;align-items:center;gap:.8rem;}
+    .user-chip{display:flex;align-items:center;gap:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:.25rem .75rem .25rem .25rem;font-size:.8rem;color:var(--text-sub);}
+    .avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff;}
+    .btn-logout{height:32px;padding:0 .8rem;border:1px solid var(--border2);background:var(--surface);color:var(--text-muted);border-radius:7px;cursor:pointer;font-size:.78rem;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+    .btn-logout:hover{border-color:var(--red);color:var(--red);background:var(--red-bg);}
+
+    /* ── LAYOUT ── */
+    .layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 56px);}
+
+    /* ── SIDEBAR ── */
+    aside{background:var(--surface);border-right:1px solid var(--border);padding:1.25rem .75rem;display:flex;flex-direction:column;gap:1rem;}
+    .profile-block{background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);border-radius:12px;padding:1.2rem;color:#fff;position:relative;overflow:hidden;}
+    .profile-block::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.08);}
+    .profile-block::after{content:'';position:absolute;bottom:-30px;left:-10px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.05);}
+    .profile-av{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:.7rem;}
+    .profile-name{font-size:.95rem;font-weight:700;margin-bottom:.15rem;position:relative;z-index:1;}
+    .profile-phone{font-size:.72rem;opacity:.8;font-family:'JetBrains Mono',monospace;position:relative;z-index:1;}
+    .profile-role{display:inline-block;margin-top:.5rem;padding:.1rem .5rem;background:rgba(255,255,255,.2);border-radius:999px;font-size:.68rem;font-weight:600;letter-spacing:.06em;position:relative;z-index:1;}
+    .stats-mini{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;}
+    .stat-mini{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.6rem .7rem;}
+    .stat-mini-label{font-size:.65rem;color:var(--text-muted);margin-bottom:.2rem;}
+    .stat-mini-val{font-size:1.1rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--accent);}
+    nav{display:flex;flex-direction:column;gap:.2rem;}
+    .nav-label{font-size:.65rem;font-weight:700;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase;padding:0 .5rem;margin-bottom:.2rem;}
+    .nav-item{display:flex;align-items:center;gap:.6rem;padding:.55rem .75rem;border-radius:8px;cursor:pointer;font-size:.83rem;color:var(--text-muted);transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:'Noto Sans KR',sans-serif;font-weight:500;}
+    .nav-item:hover{background:var(--bg);color:var(--text-sub);}
+    .nav-item.active{background:var(--accent-lt);color:var(--accent);font-weight:600;}
+    .nav-icon{font-size:.9rem;}
+    .nav-count{margin-left:auto;background:var(--accent);color:#fff;border-radius:999px;font-size:.65rem;font-weight:700;padding:.1rem .45rem;min-width:18px;text-align:center;}
+
+    /* ── MAIN ── */
+    main{padding:1.75rem;overflow-y:auto;}
+    .section{display:none;}
+    .section.active{display:block;animation:fadeIn .2s ease;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .page-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:1.25rem;}
+    .page-title{font-size:1.2rem;font-weight:800;}
+    .page-sub{font-size:.78rem;color:var(--text-muted);margin-top:.15rem;}
+
+    /* ── STATS ── */
+    .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-bottom:1.25rem;}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem;box-shadow:var(--shadow);display:flex;align-items:center;gap:.9rem;}
+    .stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+    .stat-icon.blue{background:#eff6ff;}
+    .stat-icon.green{background:#f0fdf4;}
+    .stat-icon.amber{background:#fffbeb;}
+    .stat-label{font-size:.72rem;color:var(--text-muted);margin-bottom:.15rem;}
+    .stat-val{font-size:1.5rem;font-weight:800;font-family:'JetBrains Mono',monospace;}
+    .stat-val.blue{color:var(--accent);}
+    .stat-val.green{color:var(--green);}
+    .stat-val.amber{color:var(--yellow);}
+
+    /* ── TOOLBAR ── */
+    .toolbar{display:flex;align-items:center;gap:.6rem;margin-bottom:.8rem;}
+    .search-wrap{flex:1;max-width:280px;position:relative;}
+    .search-wrap input{width:100%;height:34px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0 .8rem 0 2rem;font-size:.8rem;font-family:'Noto Sans KR',sans-serif;color:var(--text);outline:none;transition:border-color .15s;}
+    .search-wrap input:focus{border-color:var(--accent);}
+    .search-wrap input::placeholder{color:var(--text-dim);}
+    .search-icon{position:absolute;left:.6rem;top:50%;transform:translateY(-50%);color:var(--text-dim);font-size:.8rem;}
+    .btn-refresh{height:34px;padding:0 .8rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:.78rem;color:var(--text-muted);font-family:'Noto Sans KR',sans-serif;transition:all .15s;display:flex;align-items:center;gap:.3rem;}
+    .btn-refresh:hover{border-color:var(--accent);color:var(--accent);}
+
+    /* ── TABLE ── */
+    .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;}
+    table{width:100%;border-collapse:collapse;}
+    thead tr{background:#f8f9fc;}
+    th{padding:.7rem 1rem;text-align:left;font-size:.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);white-space:nowrap;}
+    td{padding:.8rem 1rem;font-size:.82rem;border-bottom:1px solid var(--border);vertical-align:middle;}
+    tr:last-child td{border-bottom:none;}
+    tbody tr{transition:background .1s;}
+    tbody tr:hover td{background:#f9fafc;}
+    .mono{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text-muted);}
+    .badge{display:inline-flex;align-items:center;gap:.3rem;padding:.18rem .6rem;border-radius:999px;font-size:.72rem;font-weight:600;white-space:nowrap;}
+    .badge::before{content:'●';font-size:.5rem;}
+    .badge.normal{background:var(--green-bg);color:var(--green);}
+    .badge.repair{background:var(--yellow-bg);color:var(--yellow);}
+    .badge.broken{background:var(--red-bg);color:var(--red);}
+    .badge.available{background:var(--green-bg);color:var(--green);}
+    .badge.rsv-yes{background:var(--red-bg);color:var(--red);}
+    .btn-reserve{height:28px;padding:0 .75rem;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;border:none;font-family:'Noto Sans KR',sans-serif;transition:all .15s;white-space:nowrap;}
+    .btn-reserve.can{background:var(--accent);color:#fff;}
+    .btn-reserve.can:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 2px 8px rgba(37,99,235,.3);}
+    .btn-reserve.mine{background:var(--red-bg);color:var(--red);border:1px solid #fecaca;cursor:default;}
+    .btn-reserve.off{background:var(--bg);color:var(--text-dim);border:1px solid var(--border);cursor:not-allowed;}
+
+    /* ── MY RESERVATIONS ── */
+    .res-list{display:flex;flex-direction:column;gap:.7rem;}
+    .res-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:center;gap:1rem;box-shadow:var(--shadow);transition:all .15s;animation:fadeIn .2s ease;}
+    .res-card:hover{border-color:var(--accent);box-shadow:var(--shadow-md);}
+    .res-icon{width:42px;height:42px;border-radius:10px;background:var(--accent-lt);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+    .res-body{flex:1;}
+    .res-name{font-size:.9rem;font-weight:700;margin-bottom:.25rem;}
+    .res-dates{display:flex;gap:1rem;flex-wrap:wrap;}
+    .res-date-chip{display:flex;align-items:center;gap:.3rem;font-size:.72rem;color:var(--text-muted);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:.15rem .5rem;font-family:'JetBrains Mono',monospace;}
+    .res-date-chip .label{font-size:.65rem;color:var(--text-dim);font-family:'Noto Sans KR',sans-serif;}
+    .btn-cancel{height:30px;padding:0 .8rem;border:1px solid #fecaca;background:var(--red-bg);color:var(--red);border-radius:7px;cursor:pointer;font-size:.75rem;font-weight:600;font-family:'Noto Sans KR',sans-serif;transition:all .15s;white-space:nowrap;flex-shrink:0;}
+    .btn-cancel:hover{background:var(--red);color:#fff;}
+
+    /* ── LOADING / EMPTY ── */
+    .loading-box{display:flex;align-items:center;justify-content:center;padding:3.5rem;color:var(--text-muted);font-size:.82rem;gap:.5rem;}
+    .spinner{width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .empty-box{text-align:center;padding:3.5rem;color:var(--text-muted);}
+    .empty-box .ei{font-size:2.5rem;margin-bottom:.6rem;}
+    .empty-box p{font-size:.82rem;}
+
+    /* ── MODAL OVERLAY ── */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(3px);z-index:300;align-items:center;justify-content:center;}
+    .modal-overlay.show{display:flex;}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:400px;box-shadow:var(--shadow-lg);animation:modalIn .25s cubic-bezier(.34,1.56,.64,1);}
+    @keyframes modalIn{from{opacity:0;transform:scale(.92) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+    .modal-title{font-size:1rem;font-weight:800;}
+    .modal-close{width:28px;height:28px;border:none;background:var(--bg);border-radius:6px;cursor:pointer;font-size:1rem;color:var(--text-muted);display:flex;align-items:center;justify-content:center;transition:all .15s;}
+    .modal-close:hover{background:var(--border);color:var(--text);}
+    .modal-body{display:flex;flex-direction:column;gap:1rem;}
+    .modal-eq-info{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:.9rem 1rem;display:flex;flex-direction:column;gap:.3rem;}
+    .modal-eq-name{font-size:.9rem;font-weight:700;}
+    .modal-eq-meta{font-size:.75rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+    .form-group{display:flex;flex-direction:column;gap:.4rem;}
+    .form-label{font-size:.8rem;font-weight:600;color:var(--text-sub);}
+    .form-label span{color:var(--red);}
+    .form-input{height:38px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0 .9rem;font-size:.82rem;font-family:'Noto Sans KR',sans-serif;color:var(--text);outline:none;transition:border-color .15s;width:100%;}
+    .form-input:focus{border-color:var(--accent);}
+    .form-hint{font-size:.72rem;color:var(--text-dim);}
+    .form-date-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+    .form-date-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.65rem .8rem;}
+    .form-date-label{font-size:.65rem;color:var(--text-dim);margin-bottom:.2rem;}
+    .form-date-val{font-size:.82rem;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--text-sub);}
+    .modal-footer{display:flex;gap:.6rem;margin-top:.5rem;}
+    .btn-modal-cancel{flex:1;height:40px;border:1px solid var(--border2);background:var(--surface);color:var(--text-muted);border-radius:8px;cursor:pointer;font-size:.85rem;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+    .btn-modal-cancel:hover{background:var(--bg);}
+    .btn-modal-confirm{flex:2;height:40px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:700;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+    .btn-modal-confirm:hover{background:#1d4ed8;}
+    .btn-modal-confirm:disabled{background:var(--text-dim);cursor:not-allowed;}
+
+    /* ── CONFIRM MODAL ── */
+    .confirm-modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.75rem;width:100%;max-width:340px;box-shadow:var(--shadow-lg);text-align:center;animation:modalIn .25s cubic-bezier(.34,1.56,.64,1);}
+    .confirm-icon{font-size:2.2rem;margin-bottom:.8rem;}
+    .confirm-title{font-size:1rem;font-weight:800;margin-bottom:.4rem;}
+    .confirm-desc{font-size:.82rem;color:var(--text-muted);margin-bottom:1.3rem;line-height:1.6;}
+    .confirm-btns{display:flex;gap:.6rem;}
+    .btn-confirm-no{flex:1;height:38px;border:1px solid var(--border2);background:var(--surface);color:var(--text-muted);border-radius:8px;cursor:pointer;font-size:.82rem;font-family:'Noto Sans KR',sans-serif;}
+    .btn-confirm-yes{flex:1;height:38px;background:var(--red);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:700;font-family:'Noto Sans KR',sans-serif;}
+
+    /* ── TOAST ── */
+    .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.7rem 1.1rem;font-size:.82rem;box-shadow:var(--shadow-md);display:flex;align-items:center;gap:.5rem;transform:translateY(12px);opacity:0;transition:all .25s cubic-bezier(.34,1.56,.64,1);z-index:999;pointer-events:none;}
+    .toast.show{opacity:1;transform:translateY(0);}
+    .toast.success{border-color:#bbf7d0;color:var(--green);}
+    .toast.error{border-color:#fecaca;color:var(--red);}
+    .toast.info{border-color:#bfdbfe;color:var(--accent);}
+
+    /* ── UNAUTH ── */
+    #unauth{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;}
+    #unauth.show{display:flex;}
+    .unauth-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;text-align:center;max-width:320px;width:90%;box-shadow:var(--shadow-md);}
+    .unauth-card .icon{font-size:2.5rem;margin-bottom:.8rem;}
+    .unauth-card h3{font-size:1rem;font-weight:700;margin-bottom:.4rem;}
+    .unauth-card p{font-size:.8rem;color:var(--text-muted);margin-bottom:1.2rem;}
+    .btn-login{display:inline-block;padding:.5rem 1.5rem;background:var(--accent);color:#fff;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;border:none;font-family:'Noto Sans KR',sans-serif;}
+  </style>
+</head>
+<body>
+
+<!-- 미인증 오버레이 -->
+<div id="unauth">
+  <div class="unauth-card">
+    <div class="icon">🔒</div>
+    <h3>로그인이 필요합니다</h3>
+    <p>이 페이지를 이용하려면 로그인해 주세요.</p>
+    <button class="btn-login" onclick="location.href='/login.html'">로그인하러 가기</button>
+  </div>
+</div>
+
+<!-- 예약 모달 -->
+<div class="modal-overlay" id="reserveModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🖥 장비 예약</div>
+      <button class="modal-close" onclick="closeReserveModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-eq-info">
+        <div class="modal-eq-name" id="modalEqName">-</div>
+        <div class="modal-eq-meta" id="modalEqMeta">-</div>
+      </div>
+
+      <div class="form-date-row">
+        <div class="form-date-box">
+          <div class="form-date-label">예약일</div>
+          <div class="form-date-val" id="modalReservedDate">-</div>
+        </div>
+        <div class="form-date-box">
+          <div class="form-date-label">오늘 기준</div>
+          <div class="form-date-val" id="modalToday">-</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">반납일 <span>*</span></label>
+        <input type="date" class="form-input" id="deadlineInput" oninput="validateDeadline()"/>
+        <div class="form-hint" id="deadlineHint">반납할 날짜를 선택하세요 (오늘 이후)</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-cancel" onclick="closeReserveModal()">취소</button>
+      <button class="btn-modal-confirm" id="confirmReserveBtn" onclick="submitReserve()" disabled>예약 확정</button>
+    </div>
+  </div>
+</div>
+
+<!-- 예약 취소 확인 모달 -->
+<div class="modal-overlay" id="cancelModal">
+  <div class="confirm-modal">
+    <div class="confirm-icon">⚠️</div>
+    <div class="confirm-title">예약을 취소하시겠어요?</div>
+    <div class="confirm-desc" id="cancelModalDesc">해당 장비의 예약이 취소됩니다.</div>
+    <div class="confirm-btns">
+      <button class="btn-confirm-no"  onclick="closeCancelModal()">돌아가기</button>
+      <button class="btn-confirm-yes" onclick="submitCancel()">취소 확정</button>
+    </div>
+  </div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚙</div>
+    EQUIP·RESERVE
+  </div>
+  <div class="header-right">
+    <div class="user-chip">
+      <div class="avatar" id="hAvatar">?</div>
+      <span id="hName">로딩중...</span>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">로그아웃</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside>
+    <div class="profile-block">
+      <div class="profile-av"    id="pAvatar">?</div>
+      <div class="profile-name"  id="pName">-</div>
+      <div class="profile-phone" id="pPhone">-</div>
+      <span class="profile-role" id="pRole">USER</span>
+    </div>
+    <div class="stats-mini">
+      <div class="stat-mini">
+        <div class="stat-mini-label">전체 장비</div>
+        <div class="stat-mini-val" id="miniTotal">-</div>
+      </div>
+      <div class="stat-mini">
+        <div class="stat-mini-label">내 예약</div>
+        <div class="stat-mini-val" id="miniMine">0</div>
+      </div>
+    </div>
+    <nav>
+      <div class="nav-label">메뉴</div>
+      <button class="nav-item active" id="nav-equipments" onclick="switchTab('equipments')">
+        <span class="nav-icon">🖥</span> 장비 목록
+      </button>
+      <button class="nav-item" id="nav-myreservations" onclick="switchTab('myreservations')">
+        <span class="nav-icon">📋</span> 내 예약 목록
+        <span class="nav-count" id="navCount" style="display:none">0</span>
+      </button>
+    </nav>
+  </aside>
+
+  <main>
+    <!-- 장비 목록 -->
+    <div class="section active" id="section-equipments">
+      <div class="page-head">
+        <div>
+          <div class="page-title">장비 목록</div>
+          <div class="page-sub">예약하기 버튼을 눌러 반납일을 설정하고 예약하세요</div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon blue">🖥</div>
+          <div><div class="stat-label">전체 장비</div><div class="stat-val blue" id="statTotal">-</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">✅</div>
+          <div><div class="stat-label">예약 가능</div><div class="stat-val green" id="statAvail">-</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon amber">📌</div>
+          <div><div class="stat-label">예약됨</div><div class="stat-val amber" id="statRes">-</div></div>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="장비명으로 검색..." oninput="filterTable()"/>
+        </div>
+        <button class="btn-refresh" onclick="loadEquipments()">↺ 새로고침</button>
+      </div>
+      <div class="table-wrap" id="tableWrap">
+        <div class="loading-box"><div class="spinner"></div> 장비 목록 불러오는 중...</div>
+      </div>
+    </div>
+
+    <!-- 내 예약 목록 -->
+    <div class="section" id="section-myreservations">
+      <div class="page-head">
+        <div>
+          <div class="page-title">내 예약 목록</div>
+          <div class="page-sub">예약일·반납일 확인 및 예약 취소가 가능합니다</div>
+        </div>
+      </div>
+      <div id="myResWrap">
+        <div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = 'http://localhost:8080/api';
+  let currentUser   = null;
+  let allEquipments = [];
+  let pendingReserveId   = null;  // 예약 대기 중인 장비 ID
+  let pendingCancelId    = null;  // 취소 대기 중인 장비 ID
+
+  // ── 현재 유저 조회 (세션)
+  async function fetchMe() {
+    try {
+      const res = await fetch(`${API}/auth/me`, { credentials: 'include' });
+      if (res.status === 401) {
+        document.getElementById('unauth').classList.add('show');
+        return false;
+      }
+      currentUser = await res.json();
+      renderProfile();
+      return true;
+    } catch (e) {
+      toast('error', '⚠ 서버에 연결할 수 없습니다.');
+      return false;
+    }
+  }
+
+  function renderProfile() {
+    if (!currentUser) return;
+    const init = currentUser.name?.[0] || '?';
+    ['pAvatar','hAvatar'].forEach(id => document.getElementById(id).textContent = init);
+    document.getElementById('pName').textContent  = currentUser.name;
+    document.getElementById('hName').textContent  = currentUser.name;
+    document.getElementById('pPhone').textContent = currentUser.phone;
+    document.getElementById('pRole').textContent  = currentUser.role;
+  }
+
+  // ── 탭 전환
+  function switchTab(tab) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('section-' + tab).classList.add('active');
+    document.getElementById('nav-' + tab).classList.add('active');
+    if (tab === 'myreservations') renderMyReservations();
+  }
+
+  // ── 장비 목록 로드
+  async function loadEquipments() {
+    document.getElementById('tableWrap').innerHTML =
+      `<div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>`;
+    try {
+      const res = await fetch(`${API}/equipments`, { credentials: 'include' });
+      allEquipments = await res.json();
+      updateStats();
+      renderTable(allEquipments);
+    } catch (e) {
+      document.getElementById('tableWrap').innerHTML =
+        `<div class="empty-box"><div class="ei">⚠️</div><p>서버 연결 실패<br>API 서버가 실행 중인지 확인해주세요</p></div>`;
+    }
+  }
+
+  function updateStats() {
+    const total    = allEquipments.length;
+    const reserved = allEquipments.filter(e => e.reserved).length;
+    const mine     = getMyReservedIds().length;
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statAvail').textContent = total - reserved;
+    document.getElementById('statRes').textContent   = reserved;
+    document.getElementById('miniTotal').textContent = total;
+    document.getElementById('miniMine').textContent  = mine;
+    const nc = document.getElementById('navCount');
+    nc.textContent   = mine;
+    nc.style.display = mine > 0 ? '' : 'none';
+  }
+
+  function renderTable(list) {
+    if (!list.length) {
+      document.getElementById('tableWrap').innerHTML =
+        `<div class="empty-box"><div class="ei">📭</div><p>등록된 장비가 없습니다</p></div>`;
+      return;
+    }
+    const myIds = getMyReservedIds();
+    const rows  = list.map(eq => {
+      const isMine    = myIds.includes(eq.id);
+      const statusCls = eq.status === '정상' ? 'normal' : eq.status === '수리' ? 'repair' : 'broken';
+      let btn;
+      if (eq.reserved) {
+        btn = isMine
+          ? `<button class="btn-reserve mine">내 예약</button>`
+          : `<button class="btn-reserve off" disabled>예약불가</button>`;
+      } else {
+        btn = `<button class="btn-reserve can" onclick="openReserveModal('${eq.id}')">예약하기</button>`;
+      }
+      return `<tr>
+        <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
+        <td>${eq.num}</td>
+        <td><strong>${eq.name}</strong></td>
+        <td><span class="badge ${statusCls}">${eq.status}</span></td>
+        <td><span class="badge ${eq.reserved ? 'rsv-yes' : 'available'}">${eq.reserved ? '예약됨' : '가능'}</span></td>
+        <td><span class="mono">${eq.startdate ?? '-'}</span></td>
+        <td><span class="mono">${eq.deadline ?? '-'}</span></td>
+        <td>${btn}</td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('tableWrap').innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>번호</th><th>장비명</th><th>상태</th><th>예약여부</th>
+            <th>예약일</th><th>반납기한</th><th>액션</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  function filterTable() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    renderTable(allEquipments.filter(e => e.name.toLowerCase().includes(q)));
+  }
+
+  // ── 예약 모달
+  function openReserveModal(id) {
+    const eq = allEquipments.find(e => e.id === id);
+    if (!eq) return;
+    pendingReserveId = id;
+
+    const today = todayStr();
+    document.getElementById('modalEqName').textContent    = eq.name;
+    document.getElementById('modalEqMeta').textContent    = `번호: ${eq.num}  |  상태: ${eq.status}`;
+    document.getElementById('modalReservedDate').textContent = today;
+    document.getElementById('modalToday').textContent     = today;
+    document.getElementById('deadlineInput').value        = '';
+    document.getElementById('deadlineInput').min          = today;
+    document.getElementById('deadlineHint').textContent   = '반납할 날짜를 선택하세요 (오늘 이후)';
+    document.getElementById('deadlineHint').style.color   = 'var(--text-dim)';
+    document.getElementById('confirmReserveBtn').disabled = true;
+
+    document.getElementById('reserveModal').classList.add('show');
+  }
+
+  function closeReserveModal() {
+    document.getElementById('reserveModal').classList.remove('show');
+    pendingReserveId = null;
+  }
+
+  function validateDeadline() {
+    const val  = document.getElementById('deadlineInput').value;
+    const hint = document.getElementById('deadlineHint');
+    const btn  = document.getElementById('confirmReserveBtn');
+    if (!val) {
+      hint.textContent = '반납할 날짜를 선택하세요 (오늘 이후)';
+      hint.style.color = 'var(--text-dim)';
+      btn.disabled = true;
+      return;
+    }
+    if (val < todayStr()) {
+      hint.textContent = '⚠ 오늘 이후 날짜를 선택해주세요';
+      hint.style.color = 'var(--red)';
+      btn.disabled = true;
+      return;
+    }
+    hint.textContent = '✓ 반납일이 설정되었습니다';
+    hint.style.color = 'var(--green)';
+    btn.disabled = false;
+  }
+
+  async function submitReserve() {
+    const deadline = document.getElementById('deadlineInput').value;
+    if (!deadline || !pendingReserveId) return;
+
+    document.getElementById('confirmReserveBtn').disabled = true;
+    document.getElementById('confirmReserveBtn').textContent = '처리중...';
+
+    try {
+      const res = await fetch(`${API}/equipments/reserve/${pendingReserveId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ deadline, num: 0, name: '', status: '' })
+      });
+
+      if (res.ok) {
+        const eq = allEquipments.find(e => e.id === pendingReserveId);
+        if (eq) {
+          eq.reserved     = true;
+          eq.deadline     = deadline;
+          eq.startdate = todayStr();
+        }
+        const myIds = getMyReservedIds();
+        if (!myIds.includes(pendingReserveId)) { myIds.push(pendingReserveId); setMyReservedIds(myIds); }
+        updateStats();
+        renderTable(allEquipments);
+        closeReserveModal();
+        toast('success', `✅ "${eq?.name}" 예약 완료!`);
+      } else {
+        toast('error', '❌ 예약에 실패했습니다.');
+      }
+    } catch (e) {
+      toast('error', '❌ 서버 연결 오류');
+    } finally {
+      document.getElementById('confirmReserveBtn').disabled = false;
+      document.getElementById('confirmReserveBtn').textContent = '예약 확정';
+    }
+  }
+
+  // ── 예약 취소 모달
+  function openCancelModal(id) {
+    const eq = allEquipments.find(e => e.id === id);
+    if (!eq) return;
+    pendingCancelId = id;
+    document.getElementById('cancelModalDesc').textContent =
+      `"${eq.name}" 장비의 예약이 취소됩니다.\n예약일 ${eq.startdate ?? '-'} → 반납기한 ${eq.deadline ?? '-'}`;
+    document.getElementById('cancelModal').classList.add('show');
+  }
+
+  function closeCancelModal() {
+    document.getElementById('cancelModal').classList.remove('show');
+    pendingCancelId = null;
+  }
+
+  async function submitCancel() {
+    if (!pendingCancelId) return;
+    try {
+      const res = await fetch(`${API}/equipments/cancel/${pendingCancelId}`, {
+        method: 'PUT',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const eq = allEquipments.find(e => e.id === pendingCancelId);
+        if (eq) { eq.reserved = false; eq.deadline = null; eq.startdate = null; }
+
+        const myIds = getMyReservedIds().filter(id => id !== pendingCancelId);
+        setMyReservedIds(myIds);
+
+        updateStats();
+        renderTable(allEquipments);
+        renderMyReservations();
+        closeCancelModal();
+        toast('info', `🗑 "${eq?.name}" 예약이 취소되었습니다.`);
+      } else {
+        toast('error', '❌ 취소에 실패했습니다.');
+        closeCancelModal();
+      }
+    } catch (e) {
+      toast('error', '❌ 서버 연결 오류');
+      closeCancelModal();
+    }
+  }
+
+  // ── 내 예약 목록
+  function renderMyReservations() {
+    const myIds  = getMyReservedIds();
+    const myList = allEquipments.filter(e => myIds.includes(e.id));
+    if (!myList.length) {
+      document.getElementById('myResWrap').innerHTML =
+        `<div class="empty-box"><div class="ei">📋</div><p>예약한 장비가 없습니다<br>장비 목록에서 예약해보세요</p></div>`;
+      return;
+    }
+    document.getElementById('myResWrap').innerHTML = `
+      <div class="res-list">
+        ${myList.map(eq => `
+          <div class="res-card">
+            <div class="res-icon">🖥</div>
+            <div class="res-body">
+              <div class="res-name">${eq.name}</div>
+              <div class="res-dates">
+                <div class="res-date-chip"><span class="label">예약일</span>${eq.startdate ?? '-'}</div>
+                <div class="res-date-chip"><span class="label">반납기한</span>${eq.deadline ?? '-'}</div>
+                <div class="res-date-chip"><span class="label">번호</span>${eq.num}</div>
+              </div>
+            </div>
+            <button class="btn-cancel" onclick="openCancelModal('${eq.id}')">예약 취소</button>
+          </div>`).join('')}
+      </div>`;
+  }
+
+  // ── 세션스토리지로 내 예약 ID 관리
+  function getMyReservedIds()       { return JSON.parse(sessionStorage.getItem('myReservedIds') || '[]'); }
+  function setMyReservedIds(ids)    { sessionStorage.setItem('myReservedIds', JSON.stringify(ids)); }
+
+  // ── 유틸
+  function todayStr() {
+    return new Date().toLocaleDateString('fr-CA'); // yyyy-MM-dd
+  }
+
+  // ── 로그아웃
+  async function doLogout() {
+    try { await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'include' }); } catch (e) {}
+    sessionStorage.clear();
+    toast('info', '👋 로그아웃 되었습니다.');
+    setTimeout(() => location.href = '/login.html', 1000);
+  }
+
+  // ── 토스트
+  function toast(type, msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className   = `toast ${type} show`;
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  // ── 모달 외부 클릭 닫기
+  document.getElementById('reserveModal').addEventListener('click', e => { if(e.target === e.currentTarget) closeReserveModal(); });
+  document.getElementById('cancelModal').addEventListener('click',  e => { if(e.target === e.currentTarget) closeCancelModal(); });
+
+  // ── 초기화
+  (async () => {
+    const ok = await fetchMe();
+    if (ok) await loadEquipments();
+  })();
+</script>
+</body>
+</html>
