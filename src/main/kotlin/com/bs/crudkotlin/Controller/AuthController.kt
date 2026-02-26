@@ -50,4 +50,10 @@ class AuthController(private val authService: AuthService) {
 
         return ResponseEntity.ok(user)
     }
+
+    //모든 사용자 조회
+    @GetMapping("/users")
+    fun getAll(): ResponseEntity<List<UserResponse>>{
+        return ResponseEntity.ok(authService.findAll())
+    }
 }

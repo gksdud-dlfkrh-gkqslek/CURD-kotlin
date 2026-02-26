@@ -6,6 +6,7 @@ import com.bs.crudkotlin.DTO.UserResponse
 import com.bs.crudkotlin.Entity.UserEntity
 import com.bs.crudkotlin.Repository.UserRepository
 import jakarta.servlet.http.HttpSession
+import org.springframework.http.ResponseEntity
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -60,5 +61,10 @@ class AuthService(
             ?: return null
 
         return UserResponse.from(user)
+    }
+
+    //모든 사용자 조회
+    fun findAll(): List<UserResponse> {
+        return userRepository.findAll().map{ UserResponse.from(it) }
     }
 }
