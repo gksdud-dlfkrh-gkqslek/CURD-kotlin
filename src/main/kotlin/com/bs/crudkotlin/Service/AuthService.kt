@@ -67,4 +67,9 @@ class AuthService(
     fun findAll(): List<UserResponse> {
         return userRepository.findAll().map{ UserResponse.from(it) }
     }
+
+    //사용자 삭제 기능
+    fun delete(id: String) {
+        userRepository.deleteById(id)
+    }
 }
