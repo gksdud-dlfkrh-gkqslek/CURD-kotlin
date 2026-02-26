@@ -609,27 +609,51 @@
   function renderMyReservations() {
     const myIds  = getMyReservedIds();
     const myList = allEquipments.filter(e => myIds.includes(e.id));
+
     if (!myList.length) {
       document.getElementById('myResWrap').innerHTML =
         `<div class="empty-box"><div class="ei">📋</div><p>예약한 장비가 없습니다<br>장비 목록에서 예약해보세요</p></div>`;
       return;
     }
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
     document.getElementById('myResWrap').innerHTML = `
       <div class="res-list">
-        ${myList.map(eq => `
-          <div class="res-card">
-            <div class="res-icon">🖥</div>
-            <div class="res-body">
-              <div class="res-name">${eq.name}</div>
-              <div class="res-dates">
-                <div class="res-date-chip"><span class="label">예약일</span>${eq.startdate ?? '-'}</div>
-                <div class="res-date-chip"><span class="label">반납기한</span>${eq.deadline ?? '-'}</div>
-                <div class="res-date-chip"><span class="label">번호</span>${eq.num}</div>
+        ${myList.map(eq => {
+          const startdate = eq.startdate ? new Date(eq.startdate) : null;
+
+          // 예약일 다음날부터 반납 버튼으로 변경
+          const isNextDay = startdate && today > startdate;
+
+          const btn = isNextDay
+            ? `<button class="btn-cancel" style="background:var(--green-bg);color:var(--green);border-color:rgba(46,204,138,.4);" onclick="openReturnModal('${eq.id}')">반납하기</button>`
+            : `<button class="btn-cancel" onclick="openCancelModal('${eq.id}')">예약 취소</button>`;
+
+          return `
+            <div class="res-card">
+              <div class="res-icon">🖥</div>
+              <div class="res-body">
+                <div class="res-name">${eq.name}</div>
+                <div class="res-dates">
+                  <div class="res-date-chip"><span class="label">예약일</span>${eq.startdate ?? '-'}</div>
+                  <div class="res-date-chip"><span class="label">반납기한</span>${eq.deadline ?? '-'}</div>
+                  <div class="res-date-chip"><span class="label">번호</span>${eq.num}</div>
+                </div>
               </div>
-            </div>
-            <button class="btn-cancel" onclick="openCancelModal('${eq.id}')">예약 취소</button>
-          </div>`).join('')}
+              ${btn}
+            </div>`;
+        }).join('')}
       </div>`;
+  }
+  function openReturnModal(id) {
+    const eq = allEquipments.find(e => e.id === id);
+    if (!eq) return;
+    pendingCancelId = id;
+    document.getElementById('cancelModalDesc').textContent =
+      `"${eq.name}" 장비를 반납하시겠습니까?`;
+    document.getElementById('cancelModal').classList.add('show');
   }
 
   // ── 세션스토리지로 내 예약 ID 관리
