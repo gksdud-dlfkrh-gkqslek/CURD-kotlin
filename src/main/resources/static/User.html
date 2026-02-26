@@ -574,6 +574,9 @@
   function closeCancelModal() {
     document.getElementById('cancelModal').classList.remove('show');
     pendingCancelId = null;
+    document.querySelector('#cancelModal .confirm-icon').textContent = '⚠️';
+    document.querySelector('#cancelModal .confirm-title').textContent = '예약을 취소하시겠어요?';
+    document.querySelector('#cancelModal .btn-confirm-yes').textContent = '취소 확정';
   }
 
   async function submitCancel() {
@@ -651,10 +654,13 @@
     const eq = allEquipments.find(e => e.id === id);
     if (!eq) return;
     pendingCancelId = id;
-    document.getElementById('cancelModalDesc').textContent =
-      `"${eq.name}" 장비를 반납하시겠습니까?`;
+    document.querySelector('#cancelModal .confirm-icon').textContent = '📦';
+    document.querySelector('#cancelModal .confirm-title').textContent = '장비를 반납하시겠어요?';
+    document.getElementById('cancelModalDesc').textContent = `"${eq.name}" 장비를 반납합니다.`;
+    document.querySelector('#cancelModal .btn-confirm-yes').textContent = '반납 확정';
+
     document.getElementById('cancelModal').classList.add('show');
-  }
+    }
 
   // ── 세션스토리지로 내 예약 ID 관리
   function getMyReservedIds()       { return JSON.parse(sessionStorage.getItem('myReservedIds') || '[]'); }
