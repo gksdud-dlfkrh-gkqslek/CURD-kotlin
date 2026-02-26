@@ -406,6 +406,7 @@
     try {
       const res = await fetch(`${API}/equipments`, { credentials: 'include' });
       allEquipments = await res.json();
+      allEquipments = allEquipments.filter(e => e.status === '정상');
       updateStats();
       renderTable(allEquipments);
     } catch (e) {
