@@ -4,6 +4,7 @@ import com.bs.crudkotlin.DTO.LoginRequest
 import com.bs.crudkotlin.DTO.SignUpRequest
 import com.bs.crudkotlin.DTO.UserResponse
 import com.bs.crudkotlin.Entity.UserEntity
+import com.bs.crudkotlin.Repository.EquipmentRepository
 import com.bs.crudkotlin.Repository.UserRepository
 import jakarta.servlet.http.HttpSession
 import org.springframework.http.ResponseEntity
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class AuthService(
+    private val equipmentRepository: EquipmentRepository,
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder
 ) {
@@ -70,6 +72,14 @@ class AuthService(
 
     //사용자 삭제 기능
     fun delete(id: String) {
+        val equipments = equipmentRepository.findByUserId(id)
+        equipments.forEach {
+            it.reserved = false
+            it.startdate = null
+            it.deadline = null
+            it.userId = null
+        }
+        equipmentRepository.saveAll(equipments)
         userRepository.deleteById(id)
     }
 }

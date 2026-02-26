@@ -5,6 +5,7 @@ import com.bs.crudkotlin.DTO.ReserveRequest
 import com.bs.crudkotlin.Entity.EquipmentEntity
 import com.bs.crudkotlin.Repository.EquipmentRepository
 import com.bs.crudkotlin.Service.EquipmentService
+import jakarta.servlet.http.HttpSession
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -46,8 +47,8 @@ class EquipmentController(val equipmentService: EquipmentService) {
 
     // 예약
     @PutMapping("/reserve/{id}")
-    fun putreserve(@PathVariable id: String, @RequestBody request: ReserveRequest): ResponseEntity<String> {
-        return equipmentService.updatereserve(id, request)
+    fun putreserve(@PathVariable id: String, @RequestBody request: ReserveRequest, session: HttpSession): ResponseEntity<String> {
+        return equipmentService.updatereserve(id, request,session)
     }
 
     //예약 취소

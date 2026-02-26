@@ -4,6 +4,7 @@ import com.bs.crudkotlin.DTO.EquipmentDto
 import com.bs.crudkotlin.DTO.ReserveRequest
 import com.bs.crudkotlin.Entity.EquipmentEntity
 import com.bs.crudkotlin.Repository.EquipmentRepository
+import jakarta.servlet.http.HttpSession
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -54,12 +55,14 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
     }
 
     // 예약
-    fun updatereserve(id: String, request: ReserveRequest): ResponseEntity<String> {
+    fun updatereserve(id: String, request: ReserveRequest, session: HttpSession): ResponseEntity<String> {
         val entity = equipmentRepository.findById(id).orElse(null)
             ?: return ResponseEntity.notFound().build()
+        val userId = session.getAttribute("userId") as String?
         entity.reserved = true
         entity.deadline = request.deadline
         entity.startdate = LocalDate.now()
+        entity.userId = userId
         equipmentRepository.save(entity)
         return ResponseEntity.ok("예약 완료")
     }

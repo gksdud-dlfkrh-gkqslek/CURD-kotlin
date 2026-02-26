@@ -37,5 +37,8 @@ class EquipmentEntity(
     var deadline: LocalDate? = null,
 
     @Column(nullable = true)
-    var startdate: LocalDate? = null
+    var startdate: LocalDate? = null,
+
+    @Column(nullable = true)
+    var userId: String? = null
 )
