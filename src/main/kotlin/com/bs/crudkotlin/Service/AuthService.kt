@@ -97,4 +97,13 @@ class AuthService(
             .findByApprovalStatus(ApprovalStatus.PENDING)
             .map { UserResponse.from(it) }
     }
+
+    // 사용자 승인
+    fun approveuser(id: String): ResponseEntity<String>{
+        val user = userRepository.findById(id).orElse(null)
+            ?: return ResponseEntity.notFound().build()
+        user.approvalStatus = ApprovalStatus.APPROVED
+        userRepository.save(user)
+        return ResponseEntity.ok("승인 완료")
+    }
 }
