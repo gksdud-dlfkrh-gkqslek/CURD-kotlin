@@ -65,4 +65,10 @@ class AuthController(private val authService: AuthService) {
         authService.delete(id)
         return ResponseEntity.ok("삭제 완료")
     }
+
+    // 승인 대기 목록 조회
+    @GetMapping("/pending")
+    fun getPendingUsers(): ResponseEntity<List<UserResponse>> {
+        return ResponseEntity.ok(authService.findAllPending())
+    }
 }

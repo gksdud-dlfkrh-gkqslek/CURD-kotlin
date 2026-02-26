@@ -28,8 +28,17 @@ class UserEntity(
     @Enumerated(EnumType.STRING)
     var role: UserRole = UserRole.USER,
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var approvalStatus: ApprovalStatus = ApprovalStatus.PENDING
+
 )
 enum class UserRole {
     USER,   // 일반 사용자
     ADMIN   // 관리자
+}
+enum class ApprovalStatus {
+    PENDING,     // 승인 대기
+    APPROVED,    // 승인 완료
+    REJECTED     // 거절
 }
