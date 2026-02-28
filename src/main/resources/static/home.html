@@ -401,6 +401,24 @@
       loadUsers();
     };
 
+    // 페이지 로드 시 세션 체크
+    (async () => {
+        try {
+            const res = await fetch('/api/auth/me', { credentials: 'include' });
+            if (!res.ok) {
+                location.href = '/login.html';
+                return;
+            }
+            const user = await res.json();
+            // 관리자가 아니면 접근 차단
+            if (user.role !== 'ADMIN') {
+                location.href = '/login.html';
+            }
+        } catch (e) {
+            location.href = '/login.html';
+        }
+    })();
+
     // ══════════════════════════════════════
     // ① 전체 장비 조회
     // ══════════════════════════════════════
