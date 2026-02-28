@@ -394,7 +394,15 @@
                 }
             } else {
                 const data = await res.json().catch(() => ({}));
-                showError(data.message || '전화번호 또는 비밀번호가 올바르지 않습니다.');
+
+                if (data.message === '관리자 승인 대기 중입니다.') {
+                    showError('⏳ 승인 대기 중입니다. 관리자 승인 후 로그인 가능합니다.');
+                } else if (data.message === '가입이 거절되었습니다.') {
+                    showError('🚫 가입이 거절되었습니다. 관리자에게 문의해주세요.');
+                } else {
+                    showError(data.message || '전화번호 또는 비밀번호가 올바르지 않습니다.');
+                }
+
                 btn.disabled = false;
                 btn.innerHTML = '로그인';
             }

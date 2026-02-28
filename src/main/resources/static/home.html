@@ -252,6 +252,10 @@
         <button class="nav-item"        id="nav-reservations"     onclick="switchTab('reservations')"><span class="nav-icon">📌</span>예약 현황</button>
         <div class="side-section-label">사용자 관리</div>
         <button class="nav-item"        id="nav-users"            onclick="switchTab('users')"><span class="nav-icon">👥</span>유저 조회</button>
+        <button class="nav-item" id="nav-approvals" onclick="switchTab('approvals')">
+            <span class="nav-icon">✅</span> 승인 요청
+            <span class="nav-count" id="approvalCount" style="display:none">0</span>
+        </button>
     </aside>
 
     <!-- Main -->
@@ -368,6 +372,19 @@
             </div>
 
             <div class="table-wrap" id="userListWrap">
+                <div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>
+            </div>
+        </div>
+
+
+        <!-- 승인 요청 목록 -->
+        <div class="section" id="section-approvals">
+            <div class="page-title">승인 요청 목록</div>
+            <div class="page-sub">가입 승인 대기 중인 사용자 목록입니다</div>
+            <div class="toolbar">
+                <button class="btn-sm btn-outline" onclick="loadApprovals()">↺ 새로고침</button>
+            </div>
+            <div class="table-wrap" id="approvalWrap">
                 <div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>
             </div>
         </div>
@@ -762,6 +779,97 @@
         if (e.target === e.currentTarget) closeModal(id);
       });
     });
+
+    // switchTab에 추가
+    if (tab === 'approvals') loadApprovals();
+
+    // 초기 로드에 추가
+    window.onload = () => {
+        loadEquipments();
+        loadUsers();
+        loadApprovals(); // 추가
+    };
+
+    // 승인 요청 목록 로드
+    async function loadApprovals() {
+        document.getElementById('approvalWrap').innerHTML =
+        `<div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>`;
+    try {
+        const res = await fetch(`${API}/auth/pending`, { credentials: 'include' });
+        if (!res.ok) throw new Error();
+        const list = await res.json();
+
+        // 배지 업데이트
+        const ac = document.getElementById('approvalCount');
+        ac.textContent   = list.length;
+        ac.style.display = list.length > 0 ? '' : 'none';
+
+        if (!list.length) {
+        document.getElementById('approvalWrap').innerHTML =
+            `<div class="empty-box"><div class="ei">✅</div><p>승인 대기 중인 사용자가 없습니다</p></div>`;
+        return;
+        }
+
+        const rows = list.map(u => `
+        <tr>
+            <td><span class="mono">${u.id?.slice(0,8)}…</span></td>
+            <td><strong>${u.name}</strong></td>
+            <td><span class="mono">${u.phone}</span></td>
+            <td><span class="badge user">PENDING</span></td>
+            <td>
+            <div class="td-actions">
+                <button class="btn-sm btn-primary" style="height:28px;font-size:.72rem;" onclick="approveUser('${u.id}')">✅ 승인</button>
+                <button class="btn-sm btn-danger"  style="height:28px;font-size:.72rem;" onclick="rejectUser('${u.id}')">❌ 거절</button>
+            </div>
+            </td>
+        </tr>`).join('');
+
+        document.getElementById('approvalWrap').innerHTML = `
+            <table>
+                <thead><tr>
+            <th>ID</th><th>이름</th><th>전화번호</th><th>상태</th><th>관리</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+        </table>`;
+    } catch (e) {
+        document.getElementById('approvalWrap').innerHTML =
+        `<div class="empty-box"><div class="ei">⚠️</div><p>불러오기 실패</p></div>`;
+    }
+    }
+
+    // 승인
+    async function approveUser(id) {
+    try {
+        const res = await fetch(`${API}/auth/approve/${id}`, {
+        method: 'PUT',
+        credentials: 'include'
+        });
+        if (res.ok) {
+        toast('success', '✅ 승인 완료');
+        loadApprovals();
+        loadUsers();
+        } else {
+        toast('error', '❌ 승인 실패');
+        }
+    } catch (e) { toast('error', '❌ 서버 연결 오류'); }
+    }
+
+    // 거절
+    async function rejectUser(id) {
+    try {
+        const res = await fetch(`${API}/auth/reject/${id}`, {
+        method: 'PUT',
+        credentials: 'include'
+        });
+        if (res.ok) {
+        toast('info', '🚫 거절 완료');
+        loadApprovals();
+        loadUsers();
+        } else {
+            toast('error', '❌ 거절 실패');
+          }
+        } catch (e) { toast('error', '❌ 서버 연결 오류'); }
+    }
 </script>
 </body>
 </html>

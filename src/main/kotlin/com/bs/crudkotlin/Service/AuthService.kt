@@ -50,6 +50,11 @@ class AuthService(
         if (user.approvalStatus != ApprovalStatus.APPROVED) {
             throw RuntimeException("관리자 승인 대기 중입니다.")
         }
+        // 승인 상태에 따라 메시지 분기
+        when (user.approvalStatus) {
+            ApprovalStatus.PENDING  -> throw RuntimeException("승인 대기 중입니다.")
+            ApprovalStatus.APPROVED -> {} // 통과
+        }
         //사용자 정보 저장
         session.setAttribute("userId", user.id)
         session.setAttribute("userPhone", user.phone)
@@ -105,14 +110,5 @@ class AuthService(
         user.approvalStatus = ApprovalStatus.APPROVED
         userRepository.save(user)
         return ResponseEntity.ok("승인 완료")
-    }
-
-    // 사용자 거절
-    fun rejectuser(id: String): ResponseEntity<String>{
-        val user = userRepository.findById(id).orElse(null)
-            ?: return ResponseEntity.notFound().build()
-        user.approvalStatus = ApprovalStatus.REJECTED
-        userRepository.save(user)
-        return ResponseEntity.ok("승인 거")
     }
 }

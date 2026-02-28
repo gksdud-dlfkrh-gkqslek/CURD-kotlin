@@ -31,11 +31,15 @@ class AuthController(private val authService: AuthService) {
 
     //로그인
     @PostMapping("/login")
-    fun login(
-        @RequestBody request: LoginRequest,
-        session: HttpSession): ResponseEntity<UserResponse> {
-        val user = authService.login(request, session)
-        return ResponseEntity.ok(user)
+    fun login(@RequestBody request: LoginRequest, session: HttpSession): ResponseEntity<Any> {
+        return try {
+            val user = authService.login(request, session)
+            ResponseEntity.ok(user)
+        } catch (e: RuntimeException) {
+            ResponseEntity.status(400).body(mapOf("message" to e.message))
+        } catch (e: IllegalArgumentException) {
+            ResponseEntity.status(400).body(mapOf("message" to e.message))
+        }
     }
 
     //로그아웃
@@ -81,7 +85,8 @@ class AuthController(private val authService: AuthService) {
 
     // 사용자 거절
     @PutMapping("/reject/{id}")
-    fun reject(@PathVariable id: String): ResponseEntity<ResponseEntity<String>?>? {
-        return ResponseEntity.ok(authService.rejectuser(id))
+    fun reject(@PathVariable id: String): ResponseEntity<String> {
+        authService.delete(id)
+        return ResponseEntity.ok("삭제 완료")
     }
 }
