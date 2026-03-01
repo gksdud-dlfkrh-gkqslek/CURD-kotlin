@@ -5,6 +5,7 @@ import com.bs.crudkotlin.DTO.SignUpRequest
 import com.bs.crudkotlin.DTO.UserResponse
 import com.bs.crudkotlin.Entity.ApprovalStatus
 import com.bs.crudkotlin.Entity.UserEntity
+import com.bs.crudkotlin.Entity.UserRole
 import com.bs.crudkotlin.Repository.EquipmentRepository
 import com.bs.crudkotlin.Repository.UserRepository
 import jakarta.servlet.http.HttpSession
@@ -86,6 +87,10 @@ class AuthService(
     //사용자 삭제 기능
     fun delete(id: String) {
         val equipments = equipmentRepository.findByUserId(id)
+        val user = userRepository.findById(id).orElseThrow { RuntimeException("사용자 없음") }
+        if (user.role == UserRole.ADMIN) {
+            throw RuntimeException("관리자는 삭제할 수 없습니다.")
+        }
         equipments.forEach {
             it.reserved = false
             it.startdate = null

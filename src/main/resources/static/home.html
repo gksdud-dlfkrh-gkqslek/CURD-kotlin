@@ -707,16 +707,19 @@
           `<div class="empty-box"><div class="ei">👥</div><p>유저가 없습니다</p></div>`;
         return;
       }
-      const rows = list.map(u => `
-        <tr>
-          <td><span class="mono">${u.id?.slice(0,8)}…</span></td>
-          <td><strong>${u.name}</strong></td>
-          <td><span class="mono">${u.phone}</span></td>
-          <td><span class="badge ${u.role === 'ADMIN' ? 'admin' : 'user'}">${u.role}</span></td>
-          <td>
-            <button class="btn-icon del" data-id="${u.id}" data-name="${u.name}" onclick="handleUserDelete(this)">🗑</button>
-          </td>
-        </tr>`).join('');
+      const rows = list
+        .filter(u => u.role !== 'ADMIN')   // 🔥 관리자 제외
+        .map(u => `
+            <tr>
+            <td><span class="mono">${u.id?.slice(0,8)}…</span></td>
+            <td><strong>${u.name}</strong></td>
+            <td><span class="mono">${u.phone}</span></td>
+            <td><span class="badge ${u.role === 'ADMIN' ? 'admin' : 'user'}">${u.role}</span></td>
+            <td>
+                <button class="btn-icon del" data-id="${u.id}" data-name="${u.name}" onclick="handleUserDelete(this)">🗑</button>
+            </td>
+            </tr>
+        `).join('');
 
       document.getElementById('userListWrap').innerHTML = `
         <table>

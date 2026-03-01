@@ -39,6 +39,5 @@ enum class UserRole {
 }
 enum class ApprovalStatus {
     PENDING,     // 승인 대기
-    APPROVED,    // 승인 완료
-    REJECTED     // 거절
+    APPROVED     // 승인 완료
 }
