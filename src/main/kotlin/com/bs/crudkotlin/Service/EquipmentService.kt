@@ -115,38 +115,37 @@ class EquipmentService(
 
     //반납 요청 승인
     fun approveReturn(id: String): ResponseEntity<String> {
-        fun approveReturn(id: String): ResponseEntity<String> {
-            val entity = equipmentRepository.findById(id).orElse(null)
-                ?: return ResponseEntity.notFound().build()
+        val entity = equipmentRepository.findById(id).orElse(null)
+            ?: return ResponseEntity.notFound().build()
 
-            val user = entity.userId?.let { userRepository.findById(it).orElse(null) }
+        val user = entity.userId?.let { userRepository.findById(it).orElse(null) }
 
-            if (user != null) {
-                historyRepository.save(
-                    HistoryEntity(
-                        equipmentId = entity.id,
-                        equipmentName = entity.name,
-                        userId = user.id,
-                        userName = user.name,
-                        userPhone = user.phone,
-                        reservedDate = entity.startdate,
-                        deadline = entity.deadline,
-                        returnDate = LocalDate.now(),
-                        returnStatus = entity.status.replace("요청", "")
-                    )
+        if (user != null) {
+            historyRepository.save(
+                HistoryEntity(
+                    equipmentId = entity.id,
+                    equipmentName = entity.name,
+                    userId = user.id,
+                    userName = user.name,
+                    userPhone = user.phone,
+                    reservedDate = entity.startdate,
+                    deadline = entity.deadline,
+                    returnDate = LocalDate.now(),
+                    returnStatus = entity.status.replace("요청", "")
                 )
-            }
-
-            entity.status        = entity.status.replace("요청", "")
-            entity.reserved      = false
-            entity.returnPending = false
-            entity.startdate     = null
-            entity.deadline      = null
-            entity.userId        = null
-            equipmentRepository.save(entity)
-            return ResponseEntity.ok("반납 승인 완료")
+            )
         }
+
+        entity.status        = entity.status.replace("요청", "")
+        entity.reserved      = false
+        entity.returnPending = false
+        entity.startdate     = null
+        entity.deadline      = null
+        entity.userId        = null
+        equipmentRepository.save(entity)
+        return ResponseEntity.ok("반납 승인 완료")
     }
+
 
     // 반납 대기 목록
     fun findReturnPending(): List<EquipmentDto> {
