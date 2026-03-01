@@ -260,6 +260,9 @@
             <span class="nav-icon">📦</span> 반납 승인
             <span class="nav-count" id="returnCount" style="display:none">0</span>
         </button>
+        <button class="nav-item" id="nav-history" onclick="switchTab('history')">
+            <span class="nav-icon">📜</span> 반납 히스토리
+        </button>
     </aside>
 
     <!-- Main -->
@@ -404,6 +407,17 @@
             </div>
         </div>
 
+        <div class="section" id="section-history">
+            <div class="page-title">반납 히스토리</div>
+            <div class="page-sub">반납 완료된 장비 이력입니다</div>
+            <div class="toolbar">
+                <button class="btn-sm btn-outline" onclick="loadHistory()">↺ 새로고침</button>
+            </div>
+            <div class="table-wrap" id="historyWrap">
+                <div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>
+            </div>
+        </div>
+
     </main>
 </div>
 
@@ -426,6 +440,7 @@
       if (tab === 'reservations')   loadReservations();
       if (tab === 'users')          loadUsers();
       if (tab === 'return-pending') loadReturnPending();
+      if (tab === 'history') loadHistory();
     }
 
     // ── 초기 로드
@@ -963,6 +978,46 @@
             toast('error', '❌ 반납 승인 실패');
         }
    } catch (e) { toast('error', '❌ 서버 연결 오류'); }
+
+}
+    // 반납 히스토리 조회 (관리자)
+async function loadHistory() {
+  document.getElementById('historyWrap').innerHTML =
+    `<div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>`;
+  try {
+    const res = await fetch(`${API}/equipments/history`, { credentials: 'include' });
+    const list = await res.json();
+
+    if (!list.length) {
+      document.getElementById('historyWrap').innerHTML =
+        `<div class="empty-box"><div class="ei">📜</div><p>반납 이력이 없습니다</p></div>`;
+      return;
+    }
+
+    const rows = list.map(h => {
+      const sc = h.returnStatus === '정상' ? 'normal' : h.returnStatus === '고장' ? 'repair' : 'broken';
+      return `<tr>
+        <td><strong>${h.equipmentName}</strong></td>
+        <td><strong>${h.userName}</strong></td>
+        <td><span class="mono">${h.userPhone}</span></td>
+        <td><span class="mono">${h.reservedDate ?? '-'}</span></td>
+        <td><span class="mono">${h.deadline ?? '-'}</span></td>
+        <td><span class="mono">${h.returnDate}</span></td>
+        <td><span class="badge ${sc}">${h.returnStatus}</span></td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('historyWrap').innerHTML = `
+      <table>
+        <thead><tr>
+          <th>장비명</th><th>반납자</th><th>전화번호</th><th>예약일</th><th>반납기한</th><th>반납일</th><th>반납상태</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  } catch (e) {
+    document.getElementById('historyWrap').innerHTML =
+      `<div class="empty-box"><div class="ei">⚠️</div><p>서버 연결 실패</p></div>`;
+  }
 }
 </script>
 </body>
