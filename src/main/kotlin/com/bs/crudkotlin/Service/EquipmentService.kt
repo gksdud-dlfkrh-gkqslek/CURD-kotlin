@@ -98,6 +98,14 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
         return "장비 삭제 완료"
     }
 
+    fun requestReturn(id: String, returnStatus: String): ResponseEntity<String> {
+        val entity = equipmentRepository.findById(id).orElse(null)
+        ?: return ResponseEntity.notFound().build()
+        entity.status = returnStatus
+        entity.returnPending = true
+        equipmentRepository.save(entity)
+        return ResponseEntity.ok("반납 요청 완료")
+    }
 
 
 }

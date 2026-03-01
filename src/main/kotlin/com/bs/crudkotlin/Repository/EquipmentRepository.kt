@@ -10,4 +10,6 @@ interface EquipmentRepository : JpaRepository<EquipmentEntity, String> {
     fun findByName(name: String): List<EquipmentEntity>
 
     fun findByUserId(id: String): List<EquipmentEntity>
+    
+    fun findByReturnPending(returnPending: Boolean): List<EquipmentEntity>
 }

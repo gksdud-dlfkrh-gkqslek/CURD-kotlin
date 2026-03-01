@@ -40,5 +40,8 @@ class EquipmentEntity(
     var startdate: LocalDate? = null,
 
     @Column(nullable = true)
-    var userId: String? = null
+    var userId: String? = null,
+
+    @Column(nullable = false)
+    var returnPending: Boolean = false
 )

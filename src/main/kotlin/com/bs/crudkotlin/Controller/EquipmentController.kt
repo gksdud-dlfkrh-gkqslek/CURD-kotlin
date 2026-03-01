@@ -2,6 +2,7 @@ package com.bs.crudkotlin.Controller
 
 import com.bs.crudkotlin.DTO.EquipmentDto
 import com.bs.crudkotlin.DTO.ReserveRequest
+import com.bs.crudkotlin.DTO.ReturnRequest
 import com.bs.crudkotlin.Entity.EquipmentEntity
 import com.bs.crudkotlin.Repository.EquipmentRepository
 import com.bs.crudkotlin.Service.EquipmentService
@@ -66,5 +67,11 @@ class EquipmentController(val equipmentService: EquipmentService) {
     @DeleteMapping("/{id}")
     fun delete(@PathVariable id: String): String? {
         return equipmentService.delete(id)
+    }
+
+    //장비 반납 요청
+    @PutMapping("/return/{id}")
+    fun requestReturn(@PathVariable id: String, @RequestBody request: ReturnRequest): ResponseEntity<String> {
+        return equipmentService.requestReturn(id, request.returnStatus)
     }
 }
