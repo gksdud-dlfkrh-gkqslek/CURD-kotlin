@@ -74,4 +74,10 @@ class EquipmentController(val equipmentService: EquipmentService) {
     fun requestReturn(@PathVariable id: String, @RequestBody request: ReturnRequest): ResponseEntity<String> {
         return equipmentService.requestReturn(id, request.returnStatus)
     }
+
+    //반납 승인
+    @PutMapping("/return/approve/{id}")
+    fun approveReturn(@PathVariable id: String): ResponseEntity<String> {
+        return equipmentService.approveReturn(id)
+    }
 }
