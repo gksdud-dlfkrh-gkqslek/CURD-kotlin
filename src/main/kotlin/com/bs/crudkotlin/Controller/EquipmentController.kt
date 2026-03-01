@@ -80,4 +80,10 @@ class EquipmentController(val equipmentService: EquipmentService) {
     fun approveReturn(@PathVariable id: String): ResponseEntity<String> {
         return equipmentService.approveReturn(id)
     }
+
+    // 반납 대기 목록
+    @GetMapping("/return/pending")
+    fun getReturnPending(): List<EquipmentDto> {
+        return equipmentService.findReturnPending()
+    }
 }

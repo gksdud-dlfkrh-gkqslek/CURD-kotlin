@@ -122,6 +122,11 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
         return ResponseEntity.ok("반납 승인 완료")
     }
 
+    // 반납 대기 목록
+    fun findReturnPending(): List<EquipmentDto> {
+        return equipmentRepository.findByReturnPending(true).map { EquipmentDto.fromEntity(it) }
+    }
+
 
 
 
