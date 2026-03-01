@@ -1,14 +1,12 @@
 package com.bs.crudkotlin.Controller
 
 import com.bs.crudkotlin.DTO.EquipmentDto
+import com.bs.crudkotlin.DTO.HistoryDto
 import com.bs.crudkotlin.DTO.ReserveRequest
 import com.bs.crudkotlin.DTO.ReturnRequest
-import com.bs.crudkotlin.Entity.EquipmentEntity
-import com.bs.crudkotlin.Repository.EquipmentRepository
 import com.bs.crudkotlin.Service.EquipmentService
 import jakarta.servlet.http.HttpSession
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -85,5 +83,17 @@ class EquipmentController(val equipmentService: EquipmentService) {
     @GetMapping("/return/pending")
     fun getReturnPending(): List<EquipmentDto> {
         return equipmentService.findReturnPending()
+    }
+
+    // 전체 히스토리 조회 (관리자)
+    @GetMapping("/history")
+    fun getHistory(): List<HistoryDto> {
+        return equipmentService.gethistory()
+    }
+
+    // 내 히스토리 조회 (유저)
+    @GetMapping("/history/me")
+    fun getMyHistory(session: HttpSession): List<HistoryDto> {
+        return equipmentService.getmyhistory(session)
     }
 }

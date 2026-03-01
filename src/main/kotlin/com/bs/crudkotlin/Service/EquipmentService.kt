@@ -1,20 +1,25 @@
 package com.bs.crudkotlin.Service
 
 import com.bs.crudkotlin.DTO.EquipmentDto
+import com.bs.crudkotlin.DTO.HistoryDto
 import com.bs.crudkotlin.DTO.ReserveRequest
 import com.bs.crudkotlin.Entity.EquipmentEntity
+import com.bs.crudkotlin.Entity.HistoryEntity
 import com.bs.crudkotlin.Repository.EquipmentRepository
+import com.bs.crudkotlin.Repository.HistoryRepository
+import com.bs.crudkotlin.Repository.UserRepository
 import jakarta.servlet.http.HttpSession
-import org.springframework.data.repository.findByIdOrNull
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.time.LocalDateTime
 import kotlin.collections.map
 
 @Service
-class EquipmentService(private val equipmentRepository: EquipmentRepository) {
+class EquipmentService(
+    private val equipmentRepository: EquipmentRepository,
+    private val historyRepository: HistoryRepository,
+    private val userRepository: UserRepository
+) {
 
     // 전체 조회
     fun findAll(): List<EquipmentDto> {
@@ -110,16 +115,37 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
 
     //반납 요청 승인
     fun approveReturn(id: String): ResponseEntity<String> {
-        val entity = equipmentRepository.findById(id).orElse(null)
-            ?: return ResponseEntity.notFound().build()
-        entity.status = entity.status.replace("요청","")
-        entity.reserved = false
-        entity.returnPending = false
-        entity.startdate = null
-        entity.deadline = null
-        entity.userId = null
-        equipmentRepository.save(entity)
-        return ResponseEntity.ok("반납 승인 완료")
+        fun approveReturn(id: String): ResponseEntity<String> {
+            val entity = equipmentRepository.findById(id).orElse(null)
+                ?: return ResponseEntity.notFound().build()
+
+            val user = entity.userId?.let { userRepository.findById(it).orElse(null) }
+
+            if (user != null) {
+                historyRepository.save(
+                    HistoryEntity(
+                        equipmentId = entity.id,
+                        equipmentName = entity.name,
+                        userId = user.id,
+                        userName = user.name,
+                        userPhone = user.phone,
+                        reservedDate = entity.startdate,
+                        deadline = entity.deadline,
+                        returnDate = LocalDate.now(),
+                        returnStatus = entity.status.replace("요청", "")
+                    )
+                )
+            }
+
+            entity.status        = entity.status.replace("요청", "")
+            entity.reserved      = false
+            entity.returnPending = false
+            entity.startdate     = null
+            entity.deadline      = null
+            entity.userId        = null
+            equipmentRepository.save(entity)
+            return ResponseEntity.ok("반납 승인 완료")
+        }
     }
 
     // 반납 대기 목록
@@ -127,7 +153,18 @@ class EquipmentService(private val equipmentRepository: EquipmentRepository) {
         return equipmentRepository.findByReturnPending(true).map { EquipmentDto.fromEntity(it) }
     }
 
+    // 전체 히스토리 조회 (관리자)
+    fun gethistory(): List<HistoryDto> {
+        val historyList = historyRepository.findAll()
+        return historyList.map { HistoryDto.fromEntity(it) }
+    }
 
+    fun getmyhistory(session: HttpSession): List<HistoryDto> {
+        val userId = session.getAttribute("userId") as? String
+            ?: return emptyList()
+        val historyList = historyRepository.findByUserId(userId)
+        return historyList.map { HistoryDto.fromEntity(it) }
+    }
 
 
 }
