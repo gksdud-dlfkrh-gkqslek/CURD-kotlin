@@ -256,6 +256,10 @@
             <span class="nav-icon">✅</span> 승인 요청
             <span class="nav-count" id="approvalCount" style="display:none">0</span>
         </button>
+        <button class="nav-item" id="nav-return-pending" onclick="switchTab('return-pending')">
+            <span class="nav-icon">📦</span> 반납 승인
+            <span class="nav-count" id="returnCount" style="display:none">0</span>
+        </button>
     </aside>
 
     <!-- Main -->
@@ -389,6 +393,17 @@
             </div>
         </div>
 
+        <div class="section" id="section-return-pending">
+            <div class="page-title">반납 승인 목록</div>
+            <div class="page-sub">반납 요청된 장비를 승인합니다</div>
+            <div class="toolbar">
+                <button class="btn-sm btn-outline" onclick="loadReturnPending()">↺ 새로고침</button>
+            </div>
+            <div class="table-wrap" id="returnPendingWrap">
+                <div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>
+            </div>
+        </div>
+
     </main>
 </div>
 
@@ -410,12 +425,15 @@
       if (tab === 'equipment-list') loadEquipments();
       if (tab === 'reservations')   loadReservations();
       if (tab === 'users')          loadUsers();
+      if (tab === 'return-pending') loadReturnPending();
     }
 
     // ── 초기 로드
     window.onload = () => {
-      loadEquipments();
-      loadUsers();
+        loadEquipments();
+        loadUsers();
+        loadApprovals();
+        loadReturnPending(); // 추가
     };
 
     // 페이지 로드 시 세션 체크
@@ -873,6 +891,79 @@
           }
         } catch (e) { toast('error', '❌ 서버 연결 오류'); }
     }
+
+    // 반납 대기 목록
+    async function loadReturnPending() {
+        document.getElementById('returnPendingWrap').innerHTML =
+            `<div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>`;
+        try {
+            const [returnRes, userRes] = await Promise.all([
+                fetch(`${API}/equipments/return/pending`, { credentials: 'include' }),
+                fetch(`${API}/auth/users`, { credentials: 'include' })
+            ]);
+            const list  = await returnRes.json();
+            const users = userRes.ok ? await userRes.json() : [];
+
+            // 배지 업데이트
+            const rc = document.getElementById('returnCount');
+            rc.textContent   = list.length;
+            rc.style.display = list.length > 0 ? '' : 'none';
+
+            if (!list.length) {
+            document.getElementById('returnPendingWrap').innerHTML =
+                `<div class="empty-box"><div class="ei">📦</div><p>반납 대기 중인 장비가 없습니다</p></div>`;
+            return;
+            }
+
+            const rows = list.map(eq => {
+            const user = users.find(u => u.id === eq.userId);
+            // "정상요청" → "정상", "고장요청" → "고장"
+            const displayStatus = eq.status.replace('요청', '');
+            const sc = displayStatus === '정상' ? 'normal' : displayStatus === '고장' ? 'repair' : 'broken';
+            return `<tr>
+                <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
+                <td>${eq.num}</td>
+                <td><strong>${eq.name}</strong></td>
+                <td>${user ? `<strong>${user.name}</strong>` : '<span style="color:var(--text-dim)">알 수 없음</span>'}</td>
+                <td><span class="badge ${sc}">${displayStatus}</span></td>
+                <td><span class="mono">${eq.startdate ?? '-'}</span></td>
+                <td><span class="mono">${eq.deadline ?? '-'}</span></td>
+                <td>
+                    <button class="btn-sm btn-primary" style="height:28px;font-size:.72rem;"
+                        onclick="approveReturn('${eq.id}')">✅ 승인</button>
+                </td>
+            </tr>`;
+        }).join('');
+
+        document.getElementById('returnPendingWrap').innerHTML = `
+            <table>
+                <thead><tr>
+                <th>ID</th><th>번호</th><th>장비명</th><th>반납자</th><th>반납상태</th><th>예약일</th><th>반납기한</th><th>관리</th>
+                </tr></thead>
+                <tbody>${rows}</tbody>
+            </table>`;
+    } catch (e) {
+        document.getElementById('returnPendingWrap').innerHTML =
+            `<div class="empty-box"><div class="ei">⚠️</div><p>서버 연결 실패</p></div>`;
+    }
+}
+
+   // 반납 승인
+   async function approveReturn(id) {
+        try {
+            const res = await fetch(`${API}/equipments/return/approve/${id}`, {
+            method: 'PUT',
+            credentials: 'include'
+        });
+        if (res.ok) {
+            toast('success', '✅ 반납 승인 완료');
+            loadReturnPending();
+            loadEquipments();
+        } else {
+            toast('error', '❌ 반납 승인 실패');
+        }
+   } catch (e) { toast('error', '❌ 서버 연결 오류'); }
+}
 </script>
 </body>
 </html>

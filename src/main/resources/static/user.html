@@ -259,6 +259,34 @@
   </div>
 </div>
 
+<!-- 반납 모달 -->
+<div class="modal-overlay" id="returnModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📦 장비 반납</div>
+      <button class="modal-close" onclick="closeReturnModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-eq-info">
+        <div class="modal-eq-name" id="returnEqName">-</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">반납 상태 선택 <span>*</span></label>
+        <select class="form-input" id="returnStatusSelect">
+          <option value="정상요청">정상</option>
+          <option value="고장요청">고장</option>
+          <option value="분실요청">분실</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-cancel" onclick="closeReturnModal()">취소</button>
+      <button class="btn-modal-confirm" onclick="submitReturn()"
+              style="background:var(--green);">반납 요청</button>
+    </div>
+  </div>
+</div>
+
 <!-- Header -->
 <header>
   <div class="logo">
@@ -650,17 +678,54 @@
         }).join('')}
       </div>`;
   }
+  // 기존 openReturnModal 함수 삭제하고 아래로 교체
   function openReturnModal(id) {
     const eq = allEquipments.find(e => e.id === id);
     if (!eq) return;
     pendingCancelId = id;
-    document.querySelector('#cancelModal .confirm-icon').textContent = '📦';
-    document.querySelector('#cancelModal .confirm-title').textContent = '장비를 반납하시겠어요?';
-    document.getElementById('cancelModalDesc').textContent = `"${eq.name}" 장비를 반납합니다.`;
-    document.querySelector('#cancelModal .btn-confirm-yes').textContent = '반납 확정';
+    document.getElementById('returnEqName').textContent = eq.name;
+    document.getElementById('returnStatusSelect').value = '정상요청';
+    document.getElementById('returnModal').classList.add('show');
+  }
 
-    document.getElementById('cancelModal').classList.add('show');
+  function closeReturnModal() {
+    document.getElementById('returnModal').classList.remove('show');
+    pendingCancelId = null;
+  }
+
+  async function submitReturn() {
+  if (!pendingCancelId) return;
+  const returnStatus = document.getElementById('returnStatusSelect').value;
+  try {
+    const res = await fetch(`${API}/equipments/return/${pendingCancelId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ returnStatus })
+    });
+    if (res.ok) {
+      const eq = allEquipments.find(e => e.id === pendingCancelId);
+
+      // sessionStorage에서 ID 제거
+      const myIds = getMyReservedIds().filter(id => id !== pendingCancelId);
+      setMyReservedIds(myIds);
+
+      toast('success', `📦 "${eq?.name}" 반납 요청 완료! 관리자 승인 대기 중입니다.`);
+      closeReturnModal();
+      await loadEquipments();
+      renderMyReservations();
+      updateStats();
+    } else {
+      toast('error', '❌ 반납 요청 실패');
     }
+  } catch (e) {
+    toast('error', '❌ 서버 연결 오류');
+  }
+}
+
+  document.getElementById('returnModal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeReturnModal();
+  });
 
   // ── 세션스토리지로 내 예약 ID 관리
   function getMyReservedIds()       { return JSON.parse(sessionStorage.getItem('myReservedIds') || '[]'); }
