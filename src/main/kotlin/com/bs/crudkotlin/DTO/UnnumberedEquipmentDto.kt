@@ -10,7 +10,7 @@ data class UnnumberedEquipmentDto(
     val status: String
 ) {
     // DTO -> Entity
-    fun toEntity() = UnnumberedEquipmentDto(
+    fun toEntity() = UnnumberedEquipmentEntity(
         name = name,
         stock = stock,
         status = status
@@ -21,7 +21,7 @@ data class UnnumberedEquipmentDto(
         fun fromEntity(entity: UnnumberedEquipmentEntity) = UnnumberedEquipmentDto(
             id = entity.id,
             name = entity.name,
-            stock = entity.stok,
+            stock = entity.stock,
             status = entity.status
         )
     }
