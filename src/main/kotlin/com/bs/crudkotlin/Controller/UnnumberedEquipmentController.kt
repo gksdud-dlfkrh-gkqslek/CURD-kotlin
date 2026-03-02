@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 
@@ -35,7 +36,12 @@ class UnnumberedEquipmentController(
         return unnumberedEquipmentService.unnumberedEquipment()
     }
 
-    //번호 없는 장비 재고 수정
+    //번호 없는 장비 정보 수정
+    @PutMapping("/stock/{id}")
+    fun stockequipment(@PathVariable id:String, @RequestBody unnumberedEquipmentDto: UnnumberedEquipmentDto):ResponseEntity<String>{
+        return unnumberedEquipmentService.stockequipment(id, unnumberedEquipmentDto)
+    }
+
     //번호 없는 장비 예약
     //번호 없는 장비 반납 요청
     //번호 없는 장비 반납 승인

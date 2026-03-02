@@ -33,4 +33,15 @@ class UnnumberedEquipmentService(
         }
     }
 
+    //번호 없는 장비 정보 수정
+    fun stockequipment(id: String,unnumberedEquipmentDto: UnnumberedEquipmentDto):ResponseEntity<String>{
+        val entity = unnumberedEquipmentRepository.findById(id).orElse(null)
+            ?: return ResponseEntity.notFound().build()
+        entity.name = unnumberedEquipmentDto.name
+        entity.stock = unnumberedEquipmentDto.stock
+        entity.status = unnumberedEquipmentDto.status
+        unnumberedEquipmentRepository.save(entity)
+        return ResponseEntity.ok("수정 완료")
+    }
+
 }
