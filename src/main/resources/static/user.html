@@ -789,25 +789,43 @@ async function loadMyHistory() {
       return;
     }
 
-    document.getElementById('historyWrap').innerHTML = `
-      <div class="res-list">
-        ${list.map(h => {
-          const sc = h.returnStatus === '정상' ? 'var(--green)' : h.returnStatus === '고장' ? 'var(--yellow)' : 'var(--red)';
-          return `
-            <div class="res-card">
-              <div class="res-icon">📜</div>
-              <div class="res-body">
-                <div class="res-name">${h.equipmentName}</div>
-                <div class="res-dates">
-                  <div class="res-date-chip"><span class="label">예약일</span>${h.reservedDate ?? '-'}</div>
-                  <div class="res-date-chip"><span class="label">반납기한</span>${h.deadline ?? '-'}</div>
-                  <div class="res-date-chip"><span class="label">반납일</span>${h.returnDate}</div>
-                </div>
-              </div>
-              <span style="font-size:.8rem;font-weight:700;color:${sc};">${h.returnStatus}</span>
-            </div>`;
-        }).join('')}
-      </div>`;
+    list.sort((a, b) => new Date(b.reservedDate) - new Date(a.reservedDate));
+
+    const grouped = {};
+    list.forEach(h => {
+      const key = h.reservedDate ?? '날짜 없음';
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(h);
+    });
+
+    const html = Object.entries(grouped).map(([date, items]) => {
+      const rows = items.map(h => {
+        const sc = h.returnStatus === '정상' ? 'normal' : h.returnStatus === '고장' ? 'repair' : 'broken';
+        return `<tr>
+          <td><strong>${h.equipmentName}</strong></td>
+          <td><span class="mono">${h.reservedDate ?? '-'}</span></td>
+          <td><span class="mono">${h.deadline ?? '-'}</span></td>
+          <td><span class="mono">${h.returnDate}</span></td>
+          <td><span class="badge ${sc}">${h.returnStatus}</span></td>
+        </tr>`;
+      }).join('');
+      return `
+        <div style="margin-bottom:1.5rem;">
+          <div style="font-size:.75rem;font-weight:700;color:var(--accent);padding:.35rem .8rem;background:var(--accent-lt);border-radius:6px;margin-bottom:.6rem;display:inline-block;">
+            📅 예약일: ${date}
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>장비명</th><th>예약일</th><th>반납기한</th><th>반납일</th><th>반납상태</th>
+              </tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('historyWrap').innerHTML = html;
   } catch (e) {
     document.getElementById('historyWrap').innerHTML =
       `<div class="empty-box"><div class="ei">⚠️</div><p>서버 연결 실패</p></div>`;

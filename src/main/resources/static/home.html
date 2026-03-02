@@ -239,7 +239,6 @@
     <aside>
         <div class="side-section-label">장비 관리</div>
         <button class="nav-item active" id="nav-equipment-list" onclick="switchTab('equipment-list')"><span class="nav-icon">🖥</span>전체 장비 조회</button>
-        <button class="nav-item" id="nav-equipment-search" onclick="switchTab('equipment-search')"><span class="nav-icon">🔍</span>장비 단건 조회</button>
         <button class="nav-item" id="nav-equipment-add" onclick="switchTab('equipment-add')"><span class="nav-icon">➕</span>장비 등록</button>
         <div class="side-section-label">예약 관리</div>
         <button class="nav-item" id="nav-reservations" onclick="switchTab('reservations')"><span class="nav-icon">📌</span>예약 현황</button>
@@ -281,32 +280,7 @@
             </div>
         </div>
 
-        <!-- ② 단건 조회 -->
-        <div class="section" id="section-equipment-search">
-            <div class="page-title">장비 단건 조회</div>
-            <div class="page-sub">번호(num) 또는 이름(name)으로 장비를 검색합니다</div>
-            <div class="form-card" style="margin-bottom:1rem;">
-                <div class="search-bar">
-                    <div class="search-input-group">
-                        <span class="search-label">번호</span>
-                        <input type="number" class="form-input" id="searchByNum" placeholder="예: 1" style="width:120px;"/>
-                        <button class="btn-sm btn-primary" onclick="searchByNum()">검색</button>
-                    </div>
-                    <div style="color:var(--text-dim);font-size:.8rem;display:flex;align-items:center;">또는</div>
-                    <div class="search-input-group">
-                        <span class="search-label">이름</span>
-                        <input type="text" class="form-input" id="searchByName" placeholder="예: 노트북" style="width:140px;"/>
-                        <button class="btn-sm btn-primary" onclick="searchByName()">검색</button>
-                    </div>
-                    <button class="btn-sm btn-outline" onclick="clearSearchResult()">초기화</button>
-                </div>
-            </div>
-            <div class="table-wrap" id="searchResultWrap">
-                <div class="empty-box"><div class="ei">🔍</div><p>번호 또는 이름으로 검색하세요</p></div>
-            </div>
-        </div>
-
-        <!-- ③ 장비 등록 -->
+        <!-- ② 장비 등록 -->
         <div class="section" id="section-equipment-add">
             <div class="page-title">장비 등록</div>
             <div class="page-sub">새 장비를 등록합니다</div>
@@ -336,7 +310,7 @@
             </div>
         </div>
 
-        <!-- ④ 예약 현황 -->
+        <!-- ③ 예약 현황 -->
         <div class="section" id="section-reservations">
             <div class="page-title">예약 현황</div>
             <div class="page-sub">현재 예약된 장비 목록입니다</div>
@@ -348,10 +322,13 @@
             </div>
         </div>
 
-        <!-- ⑤ 유저 조회 -->
+        <!-- ④ 유저 조회 -->
         <div class="section" id="section-users">
             <div class="page-title">유저 관리</div>
             <div class="page-sub">가입된 사용자 목록을 조회하고 삭제할 수 있습니다</div>
+            <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:1rem;">
+                <div class="stat-card"><div class="stat-icon si-blue">👥</div><div><div class="stat-label">전체 유저</div><div class="stat-val sv-blue" id="sUsers">-</div></div></div>
+            </div>
             <div class="toolbar">
                 <div class="search-wrap">
                     <span class="search-icon">🔍</span>
@@ -364,7 +341,7 @@
             </div>
         </div>
 
-        <!-- ⑥ 승인 요청 -->
+        <!-- ⑤ 승인 요청 -->
         <div class="section" id="section-approvals">
             <div class="page-title">승인 요청 목록</div>
             <div class="page-sub">가입 승인 대기 중인 사용자 목록입니다</div>
@@ -376,7 +353,7 @@
             </div>
         </div>
 
-        <!-- ⑦ 반납 승인 -->
+        <!-- ⑥ 반납 승인 -->
         <div class="section" id="section-return-pending">
             <div class="page-title">반납 승인 목록</div>
             <div class="page-sub">반납 요청된 장비를 승인합니다</div>
@@ -388,7 +365,7 @@
             </div>
         </div>
 
-        <!-- ⑧ 반납 히스토리 -->
+        <!-- ⑦ 반납 히스토리 -->
         <div class="section" id="section-history">
             <div class="page-title">반납 히스토리</div>
             <div class="page-sub">반납 완료된 장비 이력입니다</div>
@@ -673,6 +650,11 @@
             const res = await fetch(`${API}/auth/users`, { credentials: 'include' });
             if (!res.ok) throw new Error();
             allUsers = await res.json();
+
+            const users    = allUsers.filter(u => u.role !== 'ADMIN');
+
+            document.getElementById('sUsers').textContent    = users.length;
+
             renderUserTable(allUsers);
         } catch (e) {
             document.getElementById('userListWrap').innerHTML =
@@ -884,12 +866,13 @@
             return;
         }
 
-        list.sort((a, b) => new Date(b.returnDate) - new Date(a.returnDate));
+        list.sort((a, b) => new Date(b.reservedDate) - new Date(a.reservedDate));
 
         const grouped = {};
         list.forEach(h => {
-            if (!grouped[h.returnDate]) grouped[h.returnDate] = [];
-            grouped[h.returnDate].push(h);
+            const key = h.reservedDate ?? '날짜 없음';
+            if (!grouped[key]) grouped[key] = [];
+            grouped[key].push(h);
         });
 
         const html = Object.entries(grouped).map(([date, items]) => {
