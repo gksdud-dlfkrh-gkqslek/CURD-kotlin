@@ -10,15 +10,19 @@ import com.bs.crudkotlin.Repository.HistoryRepository
 import com.bs.crudkotlin.Repository.UserRepository
 import jakarta.servlet.http.HttpSession
 import org.springframework.http.ResponseEntity
+import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import kotlin.collections.map
 
 @Service
+@EnableScheduling
 class EquipmentService(
     private val equipmentRepository: EquipmentRepository,
     private val historyRepository: HistoryRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val historyCleanupService: HistoryCleanupService
 ) {
 
     // 전체 조회
@@ -158,6 +162,7 @@ class EquipmentService(
         return historyList.map { HistoryDto.fromEntity(it) }
     }
 
+    // 내 히스토리 조회 (유저)
     fun getmyhistory(session: HttpSession): List<HistoryDto> {
         val userId = session.getAttribute("userId") as? String
             ?: return emptyList()
@@ -165,5 +170,10 @@ class EquipmentService(
         return historyList.map { HistoryDto.fromEntity(it) }
     }
 
+    //1년 지난 히스토리 자동 삭제
+    @Scheduled(fixedRate = 10000)
+    fun deleteOldHistory() {
+        historyCleanupService.deleteOldHistories()
+    }
 
 }
