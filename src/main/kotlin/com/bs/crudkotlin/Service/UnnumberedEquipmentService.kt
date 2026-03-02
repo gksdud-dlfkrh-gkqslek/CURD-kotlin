@@ -26,4 +26,11 @@ class UnnumberedEquipmentService(
         return "삭제 완료"
     }
 
+    //번호 없는 장비 조회
+    fun unnumberedEquipment(): List<UnnumberedEquipmentDto>{
+        return unnumberedEquipmentRepository.findAll().map {
+            UnnumberedEquipmentDto.fromEntity(it)
+        }
+    }
+
 }

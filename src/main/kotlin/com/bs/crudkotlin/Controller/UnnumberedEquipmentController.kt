@@ -30,6 +30,11 @@ class UnnumberedEquipmentController(
     }
 
     //번호 없는 장비 조회
+    @GetMapping
+    fun unnumberedEquipment(): List<UnnumberedEquipmentDto> {
+        return unnumberedEquipmentService.unnumberedEquipment()
+    }
+
     //번호 없는 장비 재고 수정
     //번호 없는 장비 예약
     //번호 없는 장비 반납 요청
