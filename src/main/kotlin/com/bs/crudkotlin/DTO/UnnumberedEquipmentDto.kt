@@ -7,13 +7,12 @@ data class UnnumberedEquipmentDto(
     val id: String? = null,
     val name: String,
     val stock: Int,
-    val status: String
+    val reservations: List<UnnumberedReservationDto>
 ) {
     // DTO -> Entity
     fun toEntity() = UnnumberedEquipmentEntity(
         name = name,
-        stock = stock,
-        status = status
+        stock = stock
     )
 
     //Entity -> DTO
@@ -22,7 +21,7 @@ data class UnnumberedEquipmentDto(
             id = entity.id,
             name = entity.name,
             stock = entity.stock,
-            status = entity.status
+            reservations = entity.reservations.map { UnnumberedReservationDto.fromEntity(it) }
         )
     }
 }

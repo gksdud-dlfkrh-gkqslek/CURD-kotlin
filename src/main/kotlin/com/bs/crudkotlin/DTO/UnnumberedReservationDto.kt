@@ -12,16 +12,16 @@ data class UnnumberedReservationDto(
     val id: String? = null,
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    var deadline: LocalDate?,
+    val deadline: LocalDate?,
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    var startdate: LocalDate? = null,
+    val startdate: LocalDate? = null,
 
-    var userId: String? = null,
+    val userId: String? = null,
 
-    var returnStatus: String,
+    val returnStatus: String,
 
-    var returnPending: Boolean = false
+    val returnPending: Boolean = false
 ) {
     //DTO -> Entity
     fun toEntity() = UnnumberedReservationEntity(
