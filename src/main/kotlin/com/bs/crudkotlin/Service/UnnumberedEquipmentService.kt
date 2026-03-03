@@ -73,7 +73,18 @@ class UnnumberedEquipmentService(
         else{
             return ResponseEntity.ok("재고 없음")
         }
+    }
 
+    //번호 없는 장비 반납 요청
+    fun unnumberedReturn(id:String, returnStatus: String):ResponseEntity<String>{
+        val entity = unnumberedReservationRepository.findById(id).orElse(null)
+        ?: return ResponseEntity.notFound().build()
+
+        entity.returnStatus = returnStatus
+        entity.returnPending = true
+
+        unnumberedReservationRepository.save(entity)
+        return ResponseEntity.ok("반납 요청 완료")
 
     }
 

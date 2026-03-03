@@ -2,11 +2,13 @@ package com.bs.crudkotlin.Controller
 
 import com.bs.crudkotlin.DTO.EquipmentDto
 import com.bs.crudkotlin.DTO.ReserveRequest
+import com.bs.crudkotlin.DTO.ReturnRequest
 import com.bs.crudkotlin.DTO.UnnumberedEquipmentDto
+import com.bs.crudkotlin.DTO.UnnumberedReturnRequest
 import com.bs.crudkotlin.Service.UnnumberedEquipmentService
 import jakarta.servlet.http.HttpSession
 import org.springframework.http.ResponseEntity
-import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -15,7 +17,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 
-@Controller
+@RestController
 @RequestMapping("/api/unnumbered")
 class UnnumberedEquipmentController(
     private val unnumberedEquipmentService: UnnumberedEquipmentService
@@ -51,6 +53,11 @@ class UnnumberedEquipmentController(
     }
 
     //번호 없는 장비 반납 요청
+    @PutMapping("/return/{id}")
+    fun unnumberedReturn(@PathVariable id:String, @RequestBody request: UnnumberedReturnRequest):ResponseEntity<String>{
+        return unnumberedEquipmentService.unnumberedReturn(id,request.returnStatus)
+    }
+
     //번호 없는 장비 반납 승인
     //번호 없는 장비 반납 대기 목록
 }
