@@ -7,7 +7,7 @@ data class UnnumberedEquipmentDto(
     val id: String? = null,
     val name: String,
     val stock: Int,
-    val reservations: List<UnnumberedReservationDto>
+    val reservations: List<UnnumberedReservationDto> = emptyList()
 ) {
     // DTO -> Entity
     fun toEntity() = UnnumberedEquipmentEntity(
