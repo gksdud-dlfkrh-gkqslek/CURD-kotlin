@@ -26,8 +26,8 @@ class UnnumberedReservationEntity (
     @Column(nullable = true)
     var userId: String? = null,
 
-    @Column(nullable = false, length = 30)
-    var returnStatus: String,
+    @Column(nullable = true, length = 30)
+    var returnStatus: String = "Unnumbered",
 
     @Column(nullable = false)
     var returnPending: Boolean = false,
