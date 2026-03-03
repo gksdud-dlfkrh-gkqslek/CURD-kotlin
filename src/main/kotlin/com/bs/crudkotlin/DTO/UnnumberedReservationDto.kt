@@ -43,3 +43,10 @@ data class UnnumberedReservationDto(
         )
     }
 }
+data class UnnumberedReserveRequest(
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    val deadline: LocalDate
+)
+data class UnnumberedReturnRequest(
+    val returnStatus: String
+)
