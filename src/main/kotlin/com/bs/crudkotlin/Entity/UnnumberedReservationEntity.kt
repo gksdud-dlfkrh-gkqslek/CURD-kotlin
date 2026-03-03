@@ -2,7 +2,10 @@ package com.bs.crudkotlin.Entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import java.time.LocalDate
 import java.util.UUID
@@ -27,5 +30,9 @@ class UnnumberedReservationEntity (
     var returnStatus: String,
 
     @Column(nullable = false)
-    var returnPending: Boolean = false
+    var returnPending: Boolean = false,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "equipment_id")
+    var equipment: UnnumberedEquipmentEntity
 )

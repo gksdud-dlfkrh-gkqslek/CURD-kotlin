@@ -1,8 +1,11 @@
 package com.bs.crudkotlin.Entity
 
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
 import jakarta.persistence.Id
+import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import java.util.UUID
 
@@ -17,5 +20,8 @@ class UnnumberedEquipmentEntity(
     var name: String,
 
     @Column(nullable = false)
-    var stock: Int
+    var stock: Int,
+
+    @OneToMany(mappedBy = "equipment", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    val reservations: MutableList<UnnumberedReservationEntity> = mutableListOf()
 )
