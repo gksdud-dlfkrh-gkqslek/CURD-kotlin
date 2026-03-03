@@ -17,8 +17,5 @@ class UnnumberedEquipmentEntity(
     var name: String,
 
     @Column(nullable = false)
-    var stock: Int,
-
-    @Column(nullable = false, length = 30)
-    var status: String
+    var stock: Int
 )
