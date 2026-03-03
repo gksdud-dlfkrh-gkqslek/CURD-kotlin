@@ -1,8 +1,10 @@
 package com.bs.crudkotlin.Controller
 
 import com.bs.crudkotlin.DTO.EquipmentDto
+import com.bs.crudkotlin.DTO.ReserveRequest
 import com.bs.crudkotlin.DTO.UnnumberedEquipmentDto
 import com.bs.crudkotlin.Service.UnnumberedEquipmentService
+import jakarta.servlet.http.HttpSession
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -43,6 +45,11 @@ class UnnumberedEquipmentController(
     }
 
     //번호 없는 장비 예약
+    @PutMapping("/reserve/{id}")
+    fun unnumberedReserve(@PathVariable id:String, @RequestBody request: ReserveRequest, session: HttpSession):ResponseEntity<String>{
+        return unnumberedEquipmentService.unnumberedReserve(id, request,session)
+    }
+
     //번호 없는 장비 반납 요청
     //번호 없는 장비 반납 승인
     //번호 없는 장비 반납 대기 목록
