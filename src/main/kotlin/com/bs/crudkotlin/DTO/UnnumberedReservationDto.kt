@@ -24,10 +24,11 @@ data class UnnumberedReservationDto(
     val returnPending: Boolean = false
 ) {
     //DTO -> Entity
-    fun toEntity() = UnnumberedReservationEntity(
+    fun toEntity(equipment: UnnumberedEquipmentEntity) = UnnumberedReservationEntity(
         deadline = deadline,
         startdate = startdate,
-        returnStatus = returnStatus
+        returnStatus = returnStatus,
+        equipment = equipment
     )
 
     //Entity -> DTO
