@@ -120,6 +120,11 @@
     .btn-reserve.mine{background:var(--red-bg);color:var(--red);border:1px solid #fecaca;cursor:default;}
     .btn-reserve.off{background:var(--bg);color:var(--text-dim);border:1px solid var(--border);cursor:not-allowed;}
 
+    /* ── UNNUMBERED SECTION ── */
+    .unnumbered-section{margin-bottom:2rem;padding:1.2rem;background:var(--surface);border:2px solid var(--accent);border-radius:12px;box-shadow:0 1px 3px rgba(37,99,235,.08);}
+    .unnumbered-title{display:flex;align-items:center;gap:.5rem;font-size:1rem;font-weight:700;color:var(--accent);margin-bottom:1rem;}
+    .unnumbered-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:.65rem;font-weight:700;}
+
     /* ── MY RESERVATIONS ── */
     .res-list{display:flex;flex-direction:column;gap:.7rem;}
     .res-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:center;gap:1rem;box-shadow:var(--shadow);transition:all .15s;animation:fadeIn .2s ease;}
@@ -259,6 +264,43 @@
   </div>
 </div>
 
+<!-- 번호 없는 장비 예약 모달 -->
+<div class="modal-overlay" id="unnumberedReserveModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📌 번호 없는 장비 예약</div>
+      <button class="modal-close" onclick="closeUnnumberedReserveModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-eq-info">
+        <div class="modal-eq-name" id="unnumberedModalEqName">-</div>
+        <div class="modal-eq-meta" id="unnumberedModalEqMeta">-</div>
+      </div>
+
+      <div class="form-date-row">
+        <div class="form-date-box">
+          <div class="form-date-label">예약일</div>
+          <div class="form-date-val" id="unnumberedModalReservedDate">-</div>
+        </div>
+        <div class="form-date-box">
+          <div class="form-date-label">오늘 기준</div>
+          <div class="form-date-val" id="unnumberedModalToday">-</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">반납일 <span>*</span></label>
+        <input type="date" class="form-input" id="unnumberedDeadlineInput" oninput="validateUnnumberedDeadline()"/>
+        <div class="form-hint" id="unnumberedDeadlineHint">반납할 날짜를 선택하세요 (오늘 이후)</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-cancel" onclick="closeUnnumberedReserveModal()">취소</button>
+      <button class="btn-modal-confirm" id="confirmUnnumberedReserveBtn" onclick="submitUnnumberedReserve()" disabled>예약 확정</button>
+    </div>
+  </div>
+</div>
+
 <!-- 반납 모달 -->
 <div class="modal-overlay" id="returnModal">
   <div class="modal">
@@ -365,6 +407,7 @@
         </div>
         <button class="btn-refresh" onclick="loadEquipments()">↺ 새로고침</button>
       </div>
+      <div id="unnumberedWrap"></div>
       <div class="table-wrap" id="tableWrap">
         <div class="loading-box"><div class="spinner"></div> 장비 목록 불러오는 중...</div>
       </div>
@@ -399,8 +442,11 @@
   const API = '/api';
   let currentUser   = null;
   let allEquipments = [];
+  let allUnnumbered = [];
   let pendingReserveId   = null;  // 예약 대기 중인 장비 ID
   let pendingCancelId    = null;  // 취소 대기 중인 장비 ID
+  let pendingReserveType = 'numbered';  // 'numbered' or 'unnumbered'
+  let pendingReturnId    = null;  // 반납 대기 중인 예약 ID (for unnumbered)
 
   // ── 현재 유저 조회 (세션)
   async function fetchMe() {
@@ -443,11 +489,24 @@
   async function loadEquipments() {
     document.getElementById('tableWrap').innerHTML =
       `<div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>`;
+    document.getElementById('unnumberedWrap').innerHTML = '';
     try {
-      const res = await fetch(`${API}/equipments`, { credentials: 'include' });
-      allEquipments = await res.json();
+      const [resNum, resUnnumbered] = await Promise.all([
+        fetch(`${API}/equipments`, { credentials: 'include' }),
+        fetch(`${API}/unnumbered`, { credentials: 'include' })
+      ]);
+
+      allEquipments = await resNum.json();
       allEquipments = allEquipments.filter(e => e.status === '정상');
+
+      if (resUnnumbered.ok) {
+        allUnnumbered = await resUnnumbered.json();
+      } else {
+        allUnnumbered = [];
+      }
+
       updateStats();
+      renderUnnumberedEquipment(allUnnumbered);
       renderTable(allEquipments);
     } catch (e) {
       document.getElementById('tableWrap').innerHTML =
@@ -456,9 +515,16 @@
   }
 
   function updateStats() {
-    const total    = allEquipments.length;
-    const reserved = allEquipments.filter(e => e.reserved).length;
-    const mine     = getMyReservedIds().length;
+    const totalNum    = allEquipments.length;
+    const reservedNum = allEquipments.filter(e => e.reserved).length;
+
+    const totalUnnum   = allUnnumbered.reduce((sum, u) => sum + (u.stock || 0), 0);
+    const reservedUnnum = allUnnumbered.reduce((sum, u) => sum + (u.reservations?.length || 0), 0);
+
+    const total    = totalNum + totalUnnum;
+    const reserved = reservedNum + reservedUnnum;
+    const mine     = getMyReservedIds().length + getMyUnnumberedReservations().length;
+
     document.getElementById('statTotal').textContent = total;
     document.getElementById('statAvail').textContent = total - reserved;
     document.getElementById('statRes').textContent   = reserved;
@@ -467,6 +533,42 @@
     const nc = document.getElementById('navCount');
     nc.textContent   = mine;
     nc.style.display = mine > 0 ? '' : 'none';
+  }
+
+  // ── 번호 없는 장비 렌더링
+  function renderUnnumberedEquipment(list) {
+    if (!list.length) {
+      document.getElementById('unnumberedWrap').innerHTML = '';
+      return;
+    }
+
+    const rows = list.map(eq => {
+      let btn;
+      if (eq.stock > 0) {
+        btn = `<button class="btn-reserve can" onclick="openReserveUnnumberedModal('${eq.id}')">예약하기</button>`;
+      } else {
+        btn = `<button class="btn-reserve off" disabled>재고 없음</button>`;
+      }
+
+      return `<tr>
+        <td><strong>${eq.name}</strong></td>
+        <td><span class="mono">${eq.stock}</span></td>
+        <td>${btn}</td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('unnumberedWrap').innerHTML = `
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>장비명</th><th>재고</th><th>액션</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div style="margin-bottom:1rem;"></div>`;
   }
 
   function renderTable(list) {
@@ -513,6 +615,7 @@
 
   function filterTable() {
     const q = document.getElementById('searchInput').value.toLowerCase();
+    renderUnnumberedEquipment(allUnnumbered.filter(e => e.name.toLowerCase().includes(q)));
     renderTable(allEquipments.filter(e => e.name.toLowerCase().includes(q)));
   }
 
@@ -648,12 +751,108 @@
     }
   }
 
+  // ── 번호 없는 장비 예약 모달
+  function openReserveUnnumberedModal(id) {
+    const eq = allUnnumbered.find(e => e.id === id);
+    if (!eq) return;
+    pendingReserveId = id;
+    pendingReserveType = 'unnumbered';
+
+    const today = todayStr();
+    document.getElementById('unnumberedModalEqName').textContent = eq.name;
+    document.getElementById('unnumberedModalEqMeta').textContent = `재고: ${eq.stock}`;
+    document.getElementById('unnumberedModalReservedDate').textContent = today;
+    document.getElementById('unnumberedModalToday').textContent = today;
+    document.getElementById('unnumberedDeadlineInput').value = '';
+    document.getElementById('unnumberedDeadlineInput').min = today;
+    document.getElementById('unnumberedDeadlineHint').textContent = '반납할 날짜를 선택하세요 (오늘 이후)';
+    document.getElementById('unnumberedDeadlineHint').style.color = 'var(--text-dim)';
+    document.getElementById('confirmUnnumberedReserveBtn').disabled = true;
+
+    document.getElementById('unnumberedReserveModal').classList.add('show');
+  }
+
+  function closeUnnumberedReserveModal() {
+    document.getElementById('unnumberedReserveModal').classList.remove('show');
+    pendingReserveId = null;
+    pendingReserveType = 'numbered';
+  }
+
+  function validateUnnumberedDeadline() {
+    const val  = document.getElementById('unnumberedDeadlineInput').value;
+    const hint = document.getElementById('unnumberedDeadlineHint');
+    const btn  = document.getElementById('confirmUnnumberedReserveBtn');
+    if (!val) {
+      hint.textContent = '반납할 날짜를 선택하세요 (오늘 이후)';
+      hint.style.color = 'var(--text-dim)';
+      btn.disabled = true;
+      return;
+    }
+    if (val < todayStr()) {
+      hint.textContent = '⚠ 오늘 이후 날짜를 선택해주세요';
+      hint.style.color = 'var(--red)';
+      btn.disabled = true;
+      return;
+    }
+    hint.textContent = '✓ 반납일이 설정되었습니다';
+    hint.style.color = 'var(--green)';
+    btn.disabled = false;
+  }
+
+  async function submitUnnumberedReserve() {
+    const deadline = document.getElementById('unnumberedDeadlineInput').value;
+    if (!deadline || !pendingReserveId) return;
+
+    document.getElementById('confirmUnnumberedReserveBtn').disabled = true;
+    document.getElementById('confirmUnnumberedReserveBtn').textContent = '처리중...';
+
+    try {
+      const res = await fetch(`${API}/unnumbered/reserve/${pendingReserveId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ deadline })
+      });
+
+      if (res.ok) {
+        const eq = allUnnumbered.find(e => e.id === pendingReserveId);
+        closeUnnumberedReserveModal();
+        toast('success', `✅ "${eq?.name}" 예약 완료!`);
+        await loadEquipments();
+        renderMyReservations();
+      } else {
+        toast('error', '❌ 예약에 실패했습니다.');
+      }
+    } catch (e) {
+      toast('error', '❌ 서버 연결 오류');
+    } finally {
+      document.getElementById('confirmUnnumberedReserveBtn').disabled = false;
+      document.getElementById('confirmUnnumberedReserveBtn').textContent = '예약 확정';
+    }
+  }
+
   // ── 내 예약 목록
   function renderMyReservations() {
     const myIds  = getMyReservedIds();
     const myList = allEquipments.filter(e => myIds.includes(e.id));
 
-    if (!myList.length) {
+    const myUnnumbered = getMyUnnumberedReservations();
+
+    const combined = [
+      ...myList.map(eq => ({
+        type: 'numbered',
+        id: eq.id,
+        name: eq.name,
+        startdate: eq.startdate,
+        deadline: eq.deadline,
+        num: eq.num,
+        reservationId: eq.id,
+        returnPending: eq.returnPending
+      })),
+      ...myUnnumbered
+    ];
+
+    if (!combined.length) {
       document.getElementById('myResWrap').innerHTML =
         `<div class="empty-box"><div class="ei">📋</div><p>예약한 장비가 없습니다<br>장비 목록에서 예약해보세요</p></div>`;
       return;
@@ -664,25 +863,38 @@
 
     document.getElementById('myResWrap').innerHTML = `
       <div class="res-list">
-        ${myList.map(eq => {
-          const startdate = eq.startdate ? new Date(eq.startdate) : null;
-
-          // 예약일 다음날부터 반납 버튼으로 변경
+        ${combined.map(item => {
+          const startdate = item.startdate ? new Date(item.startdate) : null;
           const isNextDay = startdate && today > startdate;
 
-          const btn = isNextDay
-            ? `<button class="btn-cancel" style="background:var(--green-bg);color:var(--green);border-color:rgba(46,204,138,.4);" onclick="openReturnModal('${eq.id}')">반납하기</button>`
-            : `<button class="btn-cancel" onclick="openCancelModal('${eq.id}')">예약 취소</button>`;
+          // 반납 승인 대기 상태인 경우
+          const isPendingReturn = item.returnPending === true;
+
+          let btn;
+          if (isPendingReturn) {
+            btn = `<span style="display:inline-block;background:var(--yellow-bg);color:var(--yellow);padding:.4rem .8rem;border-radius:6px;font-size:.72rem;font-weight:600;">반납 승인 대기</span>`;
+          } else if (item.type === 'numbered') {
+            btn = isNextDay
+              ? `<button class="btn-cancel" style="background:var(--green-bg);color:var(--green);border-color:rgba(46,204,138,.4);" onclick="openReturnModal('${item.id}')">반납하기</button>`
+              : `<button class="btn-cancel" onclick="openCancelModal('${item.id}')">예약 취소</button>`;
+          } else {
+            // 번호 없는 장비: 하루 지나지 않으면 취소, 하루 지나면 반납
+            btn = isNextDay
+              ? `<button class="btn-cancel" style="background:var(--green-bg);color:var(--green);border-color:rgba(46,204,138,.4);" onclick="openReturnUnnumberedModal('${item.reservationId}')">반납하기</button>`
+              : `<button class="btn-cancel" onclick="cancelUnnumberedReservation('${item.reservationId}')">예약 취소</button>`;
+          }
+
+          const typeLabel = item.type === 'unnumbered' ? '<span style="display:inline-block;background:var(--accent-lt);color:var(--accent);padding:.1rem .4rem;border-radius:4px;font-size:.65rem;font-weight:600;margin-left:.4rem;">번호없음</span>' : '';
 
           return `
             <div class="res-card">
-              <div class="res-icon">🖥</div>
+              <div class="res-icon">${item.type === 'unnumbered' ? '📦' : '🖥'}</div>
               <div class="res-body">
-                <div class="res-name">${eq.name}</div>
+                <div class="res-name">${item.name}${typeLabel}</div>
                 <div class="res-dates">
-                  <div class="res-date-chip"><span class="label">예약일</span>${eq.startdate ?? '-'}</div>
-                  <div class="res-date-chip"><span class="label">반납기한</span>${eq.deadline ?? '-'}</div>
-                  <div class="res-date-chip"><span class="label">번호</span>${eq.num}</div>
+                  <div class="res-date-chip"><span class="label">예약일</span>${item.startdate ?? '-'}</div>
+                  <div class="res-date-chip"><span class="label">반납기한</span>${item.deadline ?? '-'}</div>
+                  ${item.type === 'numbered' ? `<div class="res-date-chip"><span class="label">번호</span>${item.num}</div>` : ''}
                 </div>
               </div>
               ${btn}
@@ -703,45 +915,147 @@
   function closeReturnModal() {
     document.getElementById('returnModal').classList.remove('show');
     pendingCancelId = null;
+    pendingReturnId = null;
   }
 
   async function submitReturn() {
-  if (!pendingCancelId) return;
-  const returnStatus = document.getElementById('returnStatusSelect').value;
-  try {
-    const res = await fetch(`${API}/equipments/return/${pendingCancelId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ returnStatus })
-    });
-    if (res.ok) {
-      const eq = allEquipments.find(e => e.id === pendingCancelId);
+    const returnStatus = document.getElementById('returnStatusSelect').value;
 
-      // sessionStorage에서 ID 제거
-      const myIds = getMyReservedIds().filter(id => id !== pendingCancelId);
-      setMyReservedIds(myIds);
-
-      toast('success', `📦 "${eq?.name}" 반납 요청 완료! 관리자 승인 대기 중입니다.`);
-      closeReturnModal();
-      await loadEquipments();
-      renderMyReservations();
-      updateStats();
-    } else {
-      toast('error', '❌ 반납 요청 실패');
+    // 번호 없는 장비 반납
+    if (pendingReturnId) {
+      return submitUnnumberedReturn();
     }
-  } catch (e) {
-    toast('error', '❌ 서버 연결 오류');
+
+    if (!pendingCancelId) return;
+
+    try {
+      const res = await fetch(`${API}/equipments/return/${pendingCancelId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ returnStatus })
+      });
+      if (res.ok) {
+        const eq = allEquipments.find(e => e.id === pendingCancelId);
+
+        // sessionStorage에서 ID 제거
+        const myIds = getMyReservedIds().filter(id => id !== pendingCancelId);
+        setMyReservedIds(myIds);
+
+        toast('success', `📦 "${eq?.name}" 반납 요청 완료! 관리자 승인 대기 중입니다.`);
+        closeReturnModal();
+        await loadEquipments();
+        renderMyReservations();
+        updateStats();
+      } else {
+        toast('error', '❌ 반납 요청 실패');
+      }
+    } catch (e) {
+      toast('error', '❌ 서버 연결 오류');
+    }
   }
-}
 
   document.getElementById('returnModal').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeReturnModal();
   });
 
+  // ── 번호 없는 장비 반납
+  function openReturnUnnumberedModal(reservationId) {
+    const reservation = findUnnumberedReservation(reservationId);
+    if (!reservation) return;
+    pendingReturnId = reservationId;
+    document.getElementById('returnEqName').textContent = reservation.name;
+    document.getElementById('returnStatusSelect').value = '정상요청';
+    document.getElementById('returnModal').classList.add('show');
+  }
+
+  function findUnnumberedReservation(reservationId) {
+    for (let eq of allUnnumbered) {
+      const rsv = eq.reservations?.find(r => r.id === reservationId);
+      if (rsv) {
+        return { id: eq.id, name: eq.name, reservationId: rsv.id };
+      }
+    }
+    return null;
+  }
+
+  async function submitUnnumberedReturn() {
+    if (!pendingReturnId) return;
+    const returnStatus = document.getElementById('returnStatusSelect').value;
+    try {
+      const res = await fetch(`${API}/unnumbered/return/${pendingReturnId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ returnStatus })
+      });
+      if (res.ok) {
+        const reservation = findUnnumberedReservation(pendingReturnId);
+        toast('success', `📦 "${reservation?.name}" 반납 요청 완료! 관리자 승인 대기 중입니다.`);
+        closeReturnModal();
+        await loadEquipments();
+        renderMyReservations();
+        updateStats();
+      } else {
+        toast('error', '❌ 반납 요청 실패');
+      }
+    } catch (e) {
+      toast('error', '❌ 서버 연결 오류');
+    }
+  }
+
+  async function cancelUnnumberedReservation(reservationId) {
+    const reservation = findUnnumberedReservation(reservationId);
+    if (!reservation) return;
+
+    if (!confirm(`"${reservation.name}" 예약을 취소하시겠습니까?`)) return;
+
+    try {
+      const res = await fetch(`${API}/unnumbered/cancel/${reservationId}`, {
+        method: 'PUT',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        toast('info', `🗑 "${reservation.name}" 예약이 취소되었습니다.`);
+        await loadEquipments();
+        renderMyReservations();
+        updateStats();
+      } else {
+        toast('error', '❌ 취소에 실패했습니다.');
+      }
+    } catch (e) {
+      toast('error', '❌ 서버 연결 오류');
+    }
+  }
+
   // ── 세션스토리지로 내 예약 ID 관리
   function getMyReservedIds()       { return JSON.parse(sessionStorage.getItem('myReservedIds') || '[]'); }
   function setMyReservedIds(ids)    { sessionStorage.setItem('myReservedIds', JSON.stringify(ids)); }
+
+  // ── 번호 없는 장비 예약 조회
+  function getMyUnnumberedReservations() {
+    if (!currentUser || !allUnnumbered.length) return [];
+    const result = [];
+    allUnnumbered.forEach(eq => {
+      if (eq.reservations && Array.isArray(eq.reservations)) {
+        eq.reservations.forEach(rsv => {
+          if (rsv.userId === currentUser.id) {
+            result.push({
+              type: 'unnumbered',
+              id: eq.id,
+              name: eq.name,
+              startdate: rsv.startdate,
+              deadline: rsv.deadline,
+              reservationId: rsv.id,
+              returnStatus: rsv.returnStatus,
+              returnPending: rsv.returnPending
+            });
+          }
+        });
+      }
+    });
+    return result;
+  }
 
   // ── 유틸
   function todayStr() {
@@ -768,6 +1082,7 @@
   // ── 모달 외부 클릭 닫기
   document.getElementById('reserveModal').addEventListener('click', e => { if(e.target === e.currentTarget) closeReserveModal(); });
   document.getElementById('cancelModal').addEventListener('click',  e => { if(e.target === e.currentTarget) closeCancelModal(); });
+  document.getElementById('unnumberedReserveModal').addEventListener('click', e => { if(e.target === e.currentTarget) closeUnnumberedReserveModal(); });
 
   // ── 초기화
   (async () => {

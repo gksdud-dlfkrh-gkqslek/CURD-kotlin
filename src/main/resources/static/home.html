@@ -164,7 +164,7 @@
 </head>
 <body>
 
-<!-- 수정 모달 -->
+<!-- 수정 모달 (번호 있는 장비) -->
 <div class="modal-overlay" id="editModal">
     <div class="modal">
         <div class="modal-header">
@@ -193,6 +193,31 @@
         <div class="modal-footer">
             <button class="btn-modal-cancel" onclick="closeModal('editModal')">취소</button>
             <button class="btn-modal-confirm" onclick="submitEdit()">수정 완료</button>
+        </div>
+    </div>
+</div>
+
+<!-- 수정 모달 (번호 없는 장비) -->
+<div class="modal-overlay" id="editUnnumberedModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">✏️ 번호 없는 장비 수정</div>
+            <button class="modal-close" onclick="closeModal('editUnnumberedModal')">✕</button>
+        </div>
+        <div class="modal-form">
+            <input type="hidden" id="editUnnumberedId"/>
+            <div class="form-group">
+                <label class="form-label">장비명 (name)</label>
+                <input type="text" class="form-input" id="editUnnumberedName" placeholder="장비명"/>
+            </div>
+            <div class="form-group">
+                <label class="form-label">재고 (stock)</label>
+                <input type="number" class="form-input" id="editUnnumberedStock" placeholder="재고"/>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal-cancel" onclick="closeModal('editUnnumberedModal')">취소</button>
+            <button class="btn-modal-confirm" onclick="submitUnnumberedEdit()">수정 완료</button>
         </div>
     </div>
 </div>
@@ -275,8 +300,12 @@
                 </div>
                 <button class="btn-sm btn-outline" onclick="loadEquipments()">↺ 새로고침</button>
             </div>
-            <div class="table-wrap" id="equipListWrap">
-                <div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>
+
+            <div id="unnumberedEquipListWrap"></div>
+            <div id="numberedEquipListWrap">
+                <div class="table-wrap" id="equipListWrap">
+                    <div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>
+                </div>
             </div>
         </div>
 
@@ -284,7 +313,19 @@
         <div class="section" id="section-equipment-add">
             <div class="page-title">장비 등록</div>
             <div class="page-sub">새 장비를 등록합니다</div>
-            <div class="form-card">
+
+            <!-- 탭 스위처 -->
+            <div style="display:flex;gap:.8rem;margin-bottom:1.2rem;border-bottom:1px solid var(--border);">
+                <button id="tabNumbered" class="nav-item active" style="border-bottom:2px solid var(--accent);border-radius:0;margin:0;padding:.65rem 0;flex:0 1 auto;" onclick="switchAddTab('numbered')">
+                    🖥 번호 있는 장비
+                </button>
+                <button id="tabUnnumbered" class="nav-item" style="border-bottom:2px solid transparent;border-radius:0;margin:0;padding:.65rem 0;flex:0 1 auto;" onclick="switchAddTab('unnumbered')">
+                    📦 번호 없는 장비
+                </button>
+            </div>
+
+            <!-- 번호 있는 장비 폼 -->
+            <div id="formNumbered" class="form-card">
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">번호 (num) *</label>
@@ -308,6 +349,24 @@
                     <button class="btn-sm btn-primary" onclick="addEquipment()">➕ 장비 등록</button>
                 </div>
             </div>
+
+            <!-- 번호 없는 장비 폼 -->
+            <div id="formUnnumbered" class="form-card" style="display:none;">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">장비명 (name) *</label>
+                        <input type="text" class="form-input" id="addUnnumberedName" placeholder="장비명 입력"/>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">재고 (stock) *</label>
+                        <input type="number" class="form-input" id="addUnnumberedStock" placeholder="재고 수량" min="0"/>
+                    </div>
+                </div>
+                <div class="form-footer">
+                    <button class="btn-sm btn-outline" onclick="clearUnnumberedForm()">초기화</button>
+                    <button class="btn-sm btn-primary" onclick="addUnnumberedEquipment()">➕ 장비 등록</button>
+                </div>
+            </div>
         </div>
 
         <!-- ③ 예약 현황 -->
@@ -317,8 +376,19 @@
             <div class="toolbar">
                 <button class="btn-sm btn-outline" onclick="loadReservations()">↺ 새로고침</button>
             </div>
-            <div class="table-wrap" id="reservationWrap">
-                <div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>
+
+            <!-- 번호 없는 장비 예약 섹션 -->
+            <div id="unnumberedReservationSection" style="display:none;margin-bottom:2rem;">
+                <div class="table-wrap" id="unnumberedReservationWrap">
+                    <div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>
+                </div>
+            </div>
+
+            <!-- 번호 있는 장비 예약 섹션 -->
+            <div id="numberedReservationSection">
+                <div class="table-wrap" id="reservationWrap">
+                    <div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>
+                </div>
             </div>
         </div>
 
@@ -360,8 +430,25 @@
             <div class="toolbar">
                 <button class="btn-sm btn-outline" onclick="loadReturnPending()">↺ 새로고침</button>
             </div>
-            <div class="table-wrap" id="returnPendingWrap">
-                <div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>
+
+            <!-- 번호 없는 장비 반납 섹션 -->
+            <div id="unnumberedReturnSection" style="display:none;margin-bottom:2rem;">
+                <div style="font-size:.75rem;font-weight:700;color:var(--accent);padding:.4rem .8rem;background:var(--accent-lt);border-radius:6px;margin-bottom:.8rem;display:inline-block;">
+                    📦 번호 없는 장비 반납
+                </div>
+                <div class="table-wrap" id="unnumberedReturnWrap">
+                    <div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>
+                </div>
+            </div>
+
+            <!-- 번호 있는 장비 반납 섹션 -->
+            <div id="numberedReturnSection">
+                <div style="font-size:.75rem;font-weight:700;color:var(--accent);padding:.4rem .8rem;background:var(--accent-lt);border-radius:6px;margin-bottom:.8rem;display:inline-block;" id="numberedReturnTitle">
+                    🖥 번호 있는 장비 반납
+                </div>
+                <div class="table-wrap" id="returnPendingWrap">
+                    <div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>
+                </div>
             </div>
         </div>
 
@@ -387,10 +474,11 @@
 
 <script>
     const API = '/api';
-    let allEquipments = [];
-    let allUsers      = [];
-    let allHistory    = [];
-    let pendingAction = null;
+    let allEquipments      = [];
+    let allUnnumbered      = [];
+    let allUsers           = [];
+    let allHistory         = [];
+    let pendingAction      = null;
 
     // ── 탭 전환
     function switchTab(tab) {
@@ -407,8 +495,33 @@
         if (tab === 'history')         loadHistory();
     }
 
+    // ── 장비 등록 폼 탭 전환
+    function switchAddTab(tab) {
+        const tabNumbered = document.getElementById('tabNumbered');
+        const tabUnnumbered = document.getElementById('tabUnnumbered');
+        const formNumbered = document.getElementById('formNumbered');
+        const formUnnumbered = document.getElementById('formUnnumbered');
+
+        if (tab === 'numbered') {
+            tabNumbered.classList.add('active');
+            tabNumbered.style.borderBottom = '2px solid var(--accent)';
+            tabUnnumbered.classList.remove('active');
+            tabUnnumbered.style.borderBottom = '2px solid transparent';
+            formNumbered.style.display = 'block';
+            formUnnumbered.style.display = 'none';
+        } else {
+            tabNumbered.classList.remove('active');
+            tabNumbered.style.borderBottom = '2px solid transparent';
+            tabUnnumbered.classList.add('active');
+            tabUnnumbered.style.borderBottom = '2px solid var(--accent)';
+            formNumbered.style.display = 'none';
+            formUnnumbered.style.display = 'block';
+        }
+    }
+
     // ── 초기 로드
-    window.onload = () => {
+    window.onload = async () => {
+        await loadUnnumberedEquipments();
         loadEquipments();
         loadUsers();
         loadApprovals();
@@ -426,53 +539,112 @@
     })();
 
     // ══════════════════════════════════════
-    // ① 전체 장비 조회
+    // ① 전체 장비 조회 (번호 있는 장비)
     // ══════════════════════════════════════
     async function loadEquipments() {
         document.getElementById('equipListWrap').innerHTML =
             `<div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>`;
         try {
-            const res = await fetch(`${API}/equipments`, { credentials: 'include' });
-            allEquipments = await res.json();
+            const [numRes, unnumRes] = await Promise.all([
+                fetch(`${API}/equipments`, { credentials: 'include' }),
+                fetch(`${API}/unnumbered`, { credentials: 'include' })
+            ]);
+            allEquipments = await numRes.json();
+            allUnnumbered = unnumRes.ok ? await unnumRes.json() : [];
+            if (!Array.isArray(allUnnumbered)) allUnnumbered = [];
             updateStats();
-            renderEquipTable(allEquipments, 'equipListWrap', true);
+            renderUnnumberedEquipList();
+            renderNumberedEquipList();
         } catch (e) {
             document.getElementById('equipListWrap').innerHTML =
                 `<div class="empty-box"><div class="ei">⚠️</div><p>서버 연결 실패</p></div>`;
         }
     }
 
+    // ① 전체 장비 조회 (번호 없는 장비)
+    async function loadUnnumberedEquipments() {
+        try {
+            const res = await fetch(`${API}/unnumbered`, { credentials: 'include' });
+            allUnnumbered = await res.json();
+            if (!allUnnumbered || !Array.isArray(allUnnumbered)) allUnnumbered = [];
+            updateStats();
+            renderUnnumberedEquipList();
+        } catch (e) {
+            allUnnumbered = [];
+        }
+    }
+
     function updateStats() {
-        const total    = allEquipments.length;
-        const reserved = allEquipments.filter(e => e.reserved).length;
-        const broken   = allEquipments.filter(e => e.status !== '정상').length;
-        document.getElementById('sTotal').textContent    = total;
-        document.getElementById('sAvail').textContent    = total - reserved;
-        document.getElementById('sReserved').textContent = reserved;
+        const numTotal    = allEquipments.length;
+        const numReserved = allEquipments.filter(e => e.reserved).length;
+        const broken      = allEquipments.filter(e => e.status !== '정상').length;
+        const unnumTotal  = allUnnumbered.length;
+        document.getElementById('sTotal').textContent    = numTotal + unnumTotal;
+        document.getElementById('sAvail').textContent    = (numTotal - numReserved);
+        document.getElementById('sReserved').textContent = numReserved;
         document.getElementById('sBroken').textContent   = broken;
     }
 
     function filterEquipList() {
         const q = document.getElementById('listSearch').value.toLowerCase();
-        renderEquipTable(allEquipments.filter(e => e.name.toLowerCase().includes(q)), 'equipListWrap', true);
+        renderUnnumberedEquipList(q);
+        renderNumberedEquipList(q);
     }
 
-    function renderEquipTable(list, wrapperId, showActions) {
-        const wrap = document.getElementById(wrapperId);
-        if (!list.length) {
-            wrap.innerHTML = `<div class="empty-box"><div class="ei">📭</div><p>장비가 없습니다</p></div>`;
+    function renderUnnumberedEquipList(filter) {
+        const wrap = document.getElementById('unnumberedEquipListWrap');
+        const q = (filter || '').toLowerCase();
+
+        const filtered = allUnnumbered.filter(eq => !q || eq.name.toLowerCase().includes(q));
+        if (!filtered.length) {
+            wrap.innerHTML = '';
             return;
         }
-        const rows = list.map(eq => {
+
+        const rows = filtered.map(eq => {
+            const rsvCount = eq.reservations?.length || 0;
+            return `<tr>
+                <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
+                <td><strong>${eq.name}</strong></td>
+                <td>${eq.stock}</td>
+                <td>${rsvCount}건</td>
+                <td>
+                    <div class="td-actions">
+                        <button class="btn-icon edit" onclick="openUnnumberedEditModal('${eq.id}')">✏️</button>
+                        <button class="btn-icon del" data-id="${eq.id}" data-name="${eq.name}" onclick="handleUnnumberedDelete(this)">🗑</button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+
+        wrap.innerHTML = `
+            <div class="table-wrap">
+                <table>
+                    <thead><tr>
+                        <th>ID</th><th>장비명</th><th>재고</th><th>예약</th><th>관리</th>
+                    </tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+            <div style="margin-bottom:1.5rem;"></div>`;
+    }
+
+    function renderNumberedEquipList(filter) {
+        const wrap = document.getElementById('equipListWrap');
+        const q = (filter || '').toLowerCase();
+
+        const filtered = allEquipments.filter(eq => !q || eq.name.toLowerCase().includes(q));
+        if (!filtered.length) {
+            wrap.innerHTML = `<div class="empty-box"><div class="ei">📭</div><p>번호 있는 장비가 없습니다</p></div>`;
+            return;
+        }
+
+        const rows = filtered.map(eq => {
             const sc = eq.status === '정상' ? 'normal' : eq.status === '수리' ? 'repair' : 'broken';
-            const actions = showActions ? `
-                <div class="td-actions">
-                    ${eq.reserved
-                        ? `<span style="font-size:.7rem;color:var(--text-dim);">예약중</span>`
-                        : `<button class="btn-icon edit" onclick="openEditModal('${eq.id}')">✏️</button>
-                           <button class="btn-icon del" data-id="${eq.id}" data-name="${eq.name}" onclick="handleDelete(this)">🗑</button>`
-                    }
-                </div>` : '';
+            const actions = eq.reserved
+                ? `<span style="font-size:.7rem;color:var(--text-dim);">예약중</span>`
+                : `<button class="btn-icon edit" onclick="openEditModal('${eq.id}')">✏️</button>
+                   <button class="btn-icon del" data-id="${eq.id}" data-name="${eq.name}" onclick="handleDelete(this)">🗑</button>`;
             return `<tr>
                 <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
                 <td>${eq.num}</td>
@@ -481,14 +653,14 @@
                 <td><span class="badge ${eq.reserved ? 'rsv-yes' : 'rsv-no'}">${eq.reserved ? '예약됨' : '가능'}</span></td>
                 <td><span class="mono">${eq.startdate ?? '-'}</span></td>
                 <td><span class="mono">${eq.deadline ?? '-'}</span></td>
-                ${showActions ? `<td>${actions}</td>` : ''}
+                <td><div class="td-actions">${actions}</div></td>
             </tr>`;
         }).join('');
+
         wrap.innerHTML = `
             <table>
                 <thead><tr>
-                    <th>ID</th><th>번호</th><th>장비명</th><th>상태</th><th>예약</th><th>예약일</th><th>반납기한</th>
-                    ${showActions ? '<th>관리</th>' : ''}
+                    <th>ID</th><th>번호</th><th>장비명</th><th>상태</th><th>예약</th><th>예약일</th><th>반납기한</th><th>관리</th>
                 </tr></thead>
                 <tbody>${rows}</tbody>
             </table>`;
@@ -551,6 +723,28 @@
     }
 
     // ══════════════════════════════════════
+    // ③-b 번호 없는 장비 등록
+    // ══════════════════════════════════════
+    async function addUnnumberedEquipment() {
+        const name  = document.getElementById('addUnnumberedName').value.trim();
+        const stock = document.getElementById('addUnnumberedStock').value;
+        if (!name || stock === '') { toast('error', '장비명과 재고를 입력해주세요.'); return; }
+        try {
+            const res = await fetch(`${API}/unnumbered`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                body: JSON.stringify({ name, stock: Number(stock) })
+            });
+            if (res.ok) { toast('success', `✅ "${name}" 장비가 등록되었습니다.`); clearUnnumberedForm(); await loadUnnumberedEquipments(); }
+            else toast('error', '❌ 등록에 실패했습니다.');
+        } catch (e) { toast('error', '❌ 서버 연결 오류'); }
+    }
+
+    function clearUnnumberedForm() {
+        document.getElementById('addUnnumberedName').value  = '';
+        document.getElementById('addUnnumberedStock').value = '';
+    }
+
+    // ══════════════════════════════════════
     // ④ 수정
     // ══════════════════════════════════════
     function openEditModal(id) {
@@ -580,6 +774,33 @@
     }
 
     // ══════════════════════════════════════
+    // ④-b 번호 없는 장비 수정
+    // ══════════════════════════════════════
+    function openUnnumberedEditModal(id) {
+        const eq = allUnnumbered.find(e => e.id === id);
+        if (!eq) return;
+        document.getElementById('editUnnumberedId').value   = id;
+        document.getElementById('editUnnumberedName').value = eq.name;
+        document.getElementById('editUnnumberedStock').value = eq.stock;
+        openModal('editUnnumberedModal');
+    }
+
+    async function submitUnnumberedEdit() {
+        const id    = document.getElementById('editUnnumberedId').value;
+        const name  = document.getElementById('editUnnumberedName').value.trim();
+        const stock = document.getElementById('editUnnumberedStock').value;
+        if (!name || stock === '') { toast('error', '장비명과 재고를 입력해주세요.'); return; }
+        try {
+            const res = await fetch(`${API}/unnumbered/stock/${id}`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                body: JSON.stringify({ name, stock: Number(stock) })
+            });
+            if (res.ok) { toast('success', `✅ "${name}" 수정 완료`); closeModal('editUnnumberedModal'); await loadUnnumberedEquipments(); }
+            else toast('error', '❌ 수정 실패');
+        } catch (e) { toast('error', '❌ 서버 연결 오류'); }
+    }
+
+    // ══════════════════════════════════════
     // ⑤ 장비 삭제
     // ══════════════════════════════════════
     async function deleteEquipment(id) {
@@ -595,7 +816,22 @@
     }
 
     // ══════════════════════════════════════
-    // ⑥ 예약 현황
+    // ⑤-b 번호 없는 장비 삭제
+    // ══════════════════════════════════════
+    async function deleteUnnumberedEquipment(id) {
+        try {
+            const res = await fetch(`${API}/unnumbered/${id}`, { method: 'DELETE', credentials: 'include' });
+            if (res.ok) { toast('info', '🗑 장비가 삭제되었습니다.'); closeModal('confirmModal'); await loadUnnumberedEquipments(); }
+            else toast('error', '❌ 삭제 실패');
+        } catch (e) { toast('error', '❌ 서버 연결 오류'); }
+    }
+
+    function handleUnnumberedDelete(btn) {
+        openConfirm('장비 삭제', `"${btn.dataset.name}" 장비를 삭제하시겠습니까?`, () => deleteUnnumberedEquipment(btn.dataset.id));
+    }
+
+    // ══════════════════════════════════════
+    // ⑥ 예약 현황 (번호 있는 장비)
     // ══════════════════════════════════════
     async function loadReservations() {
         document.getElementById('reservationWrap').innerHTML =
@@ -612,31 +848,94 @@
             if (!reserved.length) {
                 document.getElementById('reservationWrap').innerHTML =
                     `<div class="empty-box"><div class="ei">📋</div><p>현재 예약된 장비가 없습니다</p></div>`;
-                return;
+                document.getElementById('numberedReservationSection').style.display = 'none';
+            } else {
+                document.getElementById('numberedReservationSection').style.display = 'block';
+                const rows = reserved.map(eq => {
+                    const user = users.find(u => u.id === eq.userId);
+                    const isPendingReturn = eq.returnPending === true;
+                    const statusBadge = isPendingReturn
+                        ? `<span class="badge" style="background:var(--yellow-bg);color:var(--yellow);">반납 승인 대기</span>`
+                        : `<span class="badge rsv-yes">예약중</span>`;
+                    return `<tr>
+                        <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
+                        <td>${eq.num}</td>
+                        <td><strong>${eq.name}</strong></td>
+                        <td>${user ? `<strong>${user.name}</strong>` : '<span style="color:var(--text-dim)">알 수 없음</span>'}</td>
+                        <td>${user ? `<span class="mono">${user.phone}</span>` : '-'}</td>
+                        <td><span class="mono">${eq.startdate ?? '-'}</span></td>
+                        <td><span class="mono">${eq.deadline ?? '-'}</span></td>
+                        <td>${statusBadge}</td>
+                    </tr>`;
+                }).join('');
+                document.getElementById('reservationWrap').innerHTML = `
+                    <table>
+                        <thead><tr>
+                            <th>ID</th><th>번호</th><th>장비명</th><th>예약자</th><th>전화번호</th><th>예약일</th><th>반납기한</th><th>상태</th>
+                        </tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>`;
             }
-            const rows = reserved.map(eq => {
-                const user = users.find(u => u.id === eq.userId);
-                return `<tr>
-                    <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
-                    <td>${eq.num}</td>
-                    <td><strong>${eq.name}</strong></td>
-                    <td>${user ? `<strong>${user.name}</strong>` : '<span style="color:var(--text-dim)">알 수 없음</span>'}</td>
-                    <td>${user ? `<span class="mono">${user.phone}</span>` : '-'}</td>
-                    <td><span class="mono">${eq.startdate ?? '-'}</span></td>
-                    <td><span class="mono">${eq.deadline ?? '-'}</span></td>
-                    <td><span class="badge rsv-yes">예약중</span></td>
-                </tr>`;
-            }).join('');
-            document.getElementById('reservationWrap').innerHTML = `
-                <table>
-                    <thead><tr>
-                        <th>ID</th><th>번호</th><th>장비명</th><th>예약자</th><th>전화번호</th><th>예약일</th><th>반납기한</th><th>상태</th>
-                    </tr></thead>
-                    <tbody>${rows}</tbody>
-                </table>`;
+            await loadUnnumberedReservations();
         } catch (e) {
             document.getElementById('reservationWrap').innerHTML =
                 `<div class="empty-box"><div class="ei">⚠️</div><p>서버 연결 실패</p></div>`;
+        }
+    }
+
+    // ⑥ 예약 현황 (번호 없는 장비)
+    async function loadUnnumberedReservations() {
+        document.getElementById('unnumberedReservationWrap').innerHTML =
+            `<div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>`;
+        try {
+            const userRes = await fetch(`${API}/auth/users`, { credentials: 'include' });
+            const users   = userRes.ok ? await userRes.json() : [];
+
+            // Collect all reservations from unnumbered equipment
+            let reservations = [];
+            if (allUnnumbered && Array.isArray(allUnnumbered)) {
+                allUnnumbered.forEach(eq => {
+                    if (eq.reservations && Array.isArray(eq.reservations)) {
+                        eq.reservations.forEach(rsv => {
+                            reservations.push({ ...rsv, equipmentId: eq.id, equipmentName: eq.name });
+                        });
+                    }
+                });
+            }
+
+            const section = document.getElementById('unnumberedReservationSection');
+            const wrap = document.getElementById('unnumberedReservationWrap');
+
+            if (reservations.length > 0) {
+                section.style.display = 'block';
+                const rows = reservations.map(rsv => {
+                    const user = users.find(u => u.id === rsv.userId);
+                    const isPendingReturn = rsv.returnPending === true;
+                    const statusBadge = isPendingReturn
+                        ? `<span class="badge" style="background:var(--yellow-bg);color:var(--yellow);">반납 승인 대기</span>`
+                        : `<span class="badge rsv-yes">예약중</span>`;
+                    return `<tr>
+                        <td><span class="mono">${rsv.id?.slice(0,8)}…</span></td>
+                        <td><strong>${rsv.equipmentName}</strong></td>
+                        <td>${user ? `<strong>${user.name}</strong>` : '<span style="color:var(--text-dim)">알 수 없음</span>'}</td>
+                        <td>${user ? `<span class="mono">${user.phone}</span>` : '-'}</td>
+                        <td><span class="mono">${rsv.startdate ?? '-'}</span></td>
+                        <td><span class="mono">${rsv.deadline ?? '-'}</span></td>
+                        <td>${statusBadge}</td>
+                    </tr>`;
+                }).join('');
+                wrap.innerHTML = `
+                    <table>
+                        <thead><tr>
+                            <th>ID</th><th>장비명</th><th>예약자</th><th>전화번호</th><th>예약일</th><th>반납기한</th><th>상태</th>
+                        </tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>`;
+            } else {
+                section.style.display = 'none';
+            }
+        } catch (e) {
+            document.getElementById('unnumberedReservationSection').style.display = 'none';
         }
     }
 
@@ -649,11 +948,10 @@
         try {
             const res = await fetch(`${API}/auth/users`, { credentials: 'include' });
             if (!res.ok) throw new Error();
-            allUsers = await res.json();
+            const rawUsers = await res.json();
+            allUsers = rawUsers.filter(u => u.role !== 'ADMIN' && u.approvalStatus === 'APPROVED');
 
-            const users    = allUsers.filter(u => u.role !== 'ADMIN');
-
-            document.getElementById('sUsers').textContent    = users.length;
+            document.getElementById('sUsers').textContent = allUsers.length;
 
             renderUserTable(allUsers);
         } catch (e) {
@@ -673,9 +971,7 @@
                 `<div class="empty-box"><div class="ei">👥</div><p>유저가 없습니다</p></div>`;
             return;
         }
-        const rows = list
-            .filter(u => u.role !== 'ADMIN')
-            .map(u => `
+        const rows = list.map(u => `
                 <tr>
                     <td><span class="mono">${u.id?.slice(0,8)}…</span></td>
                     <td><strong>${u.name}</strong></td>
@@ -770,7 +1066,7 @@
     }
 
     // ══════════════════════════════════════
-    // ⑨ 반납 대기 목록
+    // ⑨ 반납 대기 목록 (번호 있는 장비)
     // ══════════════════════════════════════
     async function loadReturnPending() {
         document.getElementById('returnPendingWrap').innerHTML =
@@ -783,50 +1079,126 @@
             const list  = await returnRes.json();
             const users = userRes.ok ? await userRes.json() : [];
 
-            const rc = document.getElementById('returnCount');
-            rc.textContent   = list.length;
-            rc.style.display = list.length > 0 ? '' : 'none';
-
             if (!list.length) {
                 document.getElementById('returnPendingWrap').innerHTML =
                     `<div class="empty-box"><div class="ei">📦</div><p>반납 대기 중인 장비가 없습니다</p></div>`;
-                return;
+                document.getElementById('numberedReturnSection').style.display = 'none';
+            } else {
+                document.getElementById('numberedReturnSection').style.display = 'block';
+                const rows = list.map(eq => {
+                    const user = users.find(u => u.id === eq.userId);
+                    const displayStatus = eq.status.replace('요청', '');
+                    const sc = displayStatus === '정상' ? 'normal' : displayStatus === '고장' ? 'repair' : 'broken';
+                    return `<tr>
+                        <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
+                        <td>${eq.num}</td>
+                        <td><strong>${eq.name}</strong></td>
+                        <td>${user ? `<strong>${user.name}</strong>` : '<span style="color:var(--text-dim)">알 수 없음</span>'}</td>
+                        <td><span class="badge ${sc}">${displayStatus}</span></td>
+                        <td><span class="mono">${eq.startdate ?? '-'}</span></td>
+                        <td><span class="mono">${eq.deadline ?? '-'}</span></td>
+                        <td>
+                            <button class="btn-sm btn-primary" style="height:28px;font-size:.72rem;"
+                                onclick="approveReturn('${eq.id}')">✅ 승인</button>
+                        </td>
+                    </tr>`;
+                }).join('');
+                document.getElementById('returnPendingWrap').innerHTML = `
+                    <table>
+                        <thead><tr>
+                            <th>ID</th><th>번호</th><th>장비명</th><th>반납자</th><th>반납상태</th><th>예약일</th><th>반납기한</th><th>관리</th>
+                        </tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>`;
             }
-            const rows = list.map(eq => {
-                const user = users.find(u => u.id === eq.userId);
-                const displayStatus = eq.status.replace('요청', '');
-                const sc = displayStatus === '정상' ? 'normal' : displayStatus === '고장' ? 'repair' : 'broken';
-                return `<tr>
-                    <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
-                    <td>${eq.num}</td>
-                    <td><strong>${eq.name}</strong></td>
-                    <td>${user ? `<strong>${user.name}</strong>` : '<span style="color:var(--text-dim)">알 수 없음</span>'}</td>
-                    <td><span class="badge ${sc}">${displayStatus}</span></td>
-                    <td><span class="mono">${eq.startdate ?? '-'}</span></td>
-                    <td><span class="mono">${eq.deadline ?? '-'}</span></td>
-                    <td>
-                        <button class="btn-sm btn-primary" style="height:28px;font-size:.72rem;"
-                            onclick="approveReturn('${eq.id}')">✅ 승인</button>
-                    </td>
-                </tr>`;
-            }).join('');
-            document.getElementById('returnPendingWrap').innerHTML = `
-                <table>
-                    <thead><tr>
-                        <th>ID</th><th>번호</th><th>장비명</th><th>반납자</th><th>반납상태</th><th>예약일</th><th>반납기한</th><th>관리</th>
-                    </tr></thead>
-                    <tbody>${rows}</tbody>
-                </table>`;
+            await loadUnnumberedReturnPending(users);
+            updateReturnCount();
         } catch (e) {
             document.getElementById('returnPendingWrap').innerHTML =
                 `<div class="empty-box"><div class="ei">⚠️</div><p>서버 연결 실패</p></div>`;
         }
     }
 
+    // ⑨ 반납 대기 목록 (번호 없는 장비)
+    async function loadUnnumberedReturnPending(users) {
+        document.getElementById('unnumberedReturnWrap').innerHTML =
+            `<div class="loading-box"><div class="spinner"></div> 불러오는 중...</div>`;
+        try {
+            const res = await fetch(`${API}/unnumbered/return/pending`, { credentials: 'include' });
+            const list = await res.json();
+
+            const section = document.getElementById('unnumberedReturnSection');
+            const wrap = document.getElementById('unnumberedReturnWrap');
+
+            if (list && Array.isArray(list) && list.length > 0) {
+                section.style.display = 'block';
+                const rows = list.map(rsv => {
+                    const user = users.find(u => u.id === rsv.userId);
+                    // allUnnumbered에서 해당 reservation을 가진 장비 찾기
+                    let eqName = '-';
+                    for (const eq of allUnnumbered) {
+                        if (eq.reservations?.some(r => r.id === rsv.id)) { eqName = eq.name; break; }
+                    }
+                    return `<tr>
+                        <td><span class="mono">${rsv.id?.slice(0,8)}…</span></td>
+                        <td><strong>${eqName}</strong></td>
+                        <td>${user ? `<strong>${user.name}</strong>` : '<span style="color:var(--text-dim)">알 수 없음</span>'}</td>
+                        <td><span class="mono">${rsv.returnStatus ?? '-'}</span></td>
+                        <td><span class="mono">${rsv.startdate ?? '-'}</span></td>
+                        <td><span class="mono">${rsv.deadline ?? '-'}</span></td>
+                        <td>
+                            <button class="btn-sm btn-primary" style="height:28px;font-size:.72rem;"
+                                onclick="approveUnnumberedReturn('${rsv.id}')">✅ 승인</button>
+                        </td>
+                    </tr>`;
+                }).join('');
+                wrap.innerHTML = `
+                    <table>
+                        <thead><tr>
+                            <th>ID</th><th>장비명</th><th>반납자</th><th>반납상태</th><th>예약일</th><th>반납기한</th><th>관리</th>
+                        </tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>`;
+            } else {
+                section.style.display = 'none';
+            }
+        } catch (e) {
+            document.getElementById('unnumberedReturnSection').style.display = 'none';
+        }
+    }
+
+    function updateReturnCount() {
+        try {
+            // Count numbered returns
+            fetch(`${API}/equipments/return/pending`, { credentials: 'include' })
+                .then(r => r.json())
+                .then(list => {
+                    let count = list.length || 0;
+                    // Count unnumbered returns
+                    fetch(`${API}/unnumbered/return/pending`, { credentials: 'include' })
+                        .then(r => r.json())
+                        .then(unnumList => {
+                            count += unnumList.length || 0;
+                            const rc = document.getElementById('returnCount');
+                            rc.textContent = count;
+                            rc.style.display = count > 0 ? '' : 'none';
+                        });
+                });
+        } catch (e) {}
+    }
+
     async function approveReturn(id) {
         try {
             const res = await fetch(`${API}/equipments/return/approve/${id}`, { method: 'PUT', credentials: 'include' });
             if (res.ok) { toast('success', '✅ 반납 승인 완료'); loadReturnPending(); loadEquipments(); }
+            else toast('error', '❌ 반납 승인 실패');
+        } catch (e) { toast('error', '❌ 서버 연결 오류'); }
+    }
+
+    async function approveUnnumberedReturn(id) {
+        try {
+            const res = await fetch(`${API}/unnumbered/return/approve/${id}`, { method: 'PUT', credentials: 'include' });
+            if (res.ok) { toast('success', '✅ 반납 승인 완료'); loadReturnPending(); loadUnnumberedEquipments(); }
             else toast('error', '❌ 반납 승인 실패');
         } catch (e) { toast('error', '❌ 서버 연결 오류'); }
     }
@@ -1037,7 +1409,7 @@
     }
 
     // 모달 외부 클릭 닫기
-    ['editModal', 'confirmModal', 'userDetailModal'].forEach(id => {
+    ['editModal', 'editUnnumberedModal', 'confirmModal', 'userDetailModal'].forEach(id => {
         document.getElementById(id).addEventListener('click', e => {
             if (e.target === e.currentTarget) closeModal(id);
         });
