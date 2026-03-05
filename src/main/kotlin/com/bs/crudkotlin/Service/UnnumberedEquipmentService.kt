@@ -3,10 +3,13 @@ package com.bs.crudkotlin.Service
 import com.bs.crudkotlin.DTO.EquipmentDto
 import com.bs.crudkotlin.DTO.ReserveRequest
 import com.bs.crudkotlin.DTO.UnnumberedEquipmentDto
+import com.bs.crudkotlin.Entity.HistoryEntity
 import com.bs.crudkotlin.Entity.UnnumberedEquipmentEntity
 import com.bs.crudkotlin.Entity.UnnumberedReservationEntity
+import com.bs.crudkotlin.Repository.HistoryRepository
 import com.bs.crudkotlin.Repository.UnnumberedEquipmentRepository
 import com.bs.crudkotlin.Repository.UnnumberedReservationRepository
+import com.bs.crudkotlin.Repository.UserRepository
 import jakarta.servlet.http.HttpSession
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
@@ -17,6 +20,8 @@ import java.time.LocalDate
 class UnnumberedEquipmentService(
     private val unnumberedEquipmentRepository: UnnumberedEquipmentRepository,
     private val unnumberedReservationRepository: UnnumberedReservationRepository,
+    private val userRepository: UserRepository,
+    private val historyRepository: HistoryRepository
 ) {
     //번호 없는 장비 등록
     fun unnumbercreate(unnumberedEquipmentDto: UnnumberedEquipmentDto):String{
@@ -58,7 +63,7 @@ class UnnumberedEquipmentService(
             entity.stock--
             unnumberedEquipmentRepository.save(entity)
 
-            val userId = session.getAttribute("userId") as String
+            val userId = session.getAttribute("userId") as? String
             val reservation = UnnumberedReservationEntity(
 
                 deadline = request.deadline,
@@ -86,6 +91,38 @@ class UnnumberedEquipmentService(
         unnumberedReservationRepository.save(entity)
         return ResponseEntity.ok("반납 요청 완료")
 
+    }
+
+    //번호 없는 장비 반납 승인
+    fun unnumberedapprove(id: String):ResponseEntity<String>{
+        val reserverved = unnumberedReservationRepository.findById(id).orElse(null)
+        ?: return ResponseEntity.notFound().build()
+
+        val entity = reserverved.equipment
+
+        val user = reserverved.userId?.let { userRepository.findById(it).orElse(null) }
+
+        if (user != null) {
+            historyRepository.save(
+                HistoryEntity(
+                    equipmentId = entity.id,
+                    equipmentName = entity.name,
+                    userId = user.id,
+                    userName = user.name,
+                    userPhone = user.phone,
+                    reservedDate = reserverved.startdate,
+                    deadline = reserverved.deadline,
+                    returnDate = LocalDate.now(),
+                    returnStatus = reserverved.returnStatus.replace("요청", "")
+                )
+            )
+        }
+        unnumberedReservationRepository.deleteById(reserverved.id)
+
+        entity.stock ++
+        unnumberedEquipmentRepository.save(entity)
+
+        return ResponseEntity.ok("반납 승인 완료")
     }
 
 }

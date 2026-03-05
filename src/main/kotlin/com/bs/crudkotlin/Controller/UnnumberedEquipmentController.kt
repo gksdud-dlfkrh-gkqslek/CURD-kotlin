@@ -59,5 +59,10 @@ class UnnumberedEquipmentController(
     }
 
     //번호 없는 장비 반납 승인
+    @PutMapping("/return/approve/{id}")
+    fun unnumberedapprove(@PathVariable id: String): ResponseEntity<String>{
+        return unnumberedEquipmentService.unnumberedapprove(id)
+    }
+
     //번호 없는 장비 반납 대기 목록
 }
