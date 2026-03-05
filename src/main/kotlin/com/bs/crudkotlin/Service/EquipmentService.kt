@@ -129,6 +129,7 @@ class EquipmentService(
                 HistoryEntity(
                     equipmentId = entity.id,
                     equipmentName = entity.name,
+                    num = entity.num,
                     userId = user.id,
                     userName = user.name,
                     userPhone = user.phone,

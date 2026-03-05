@@ -27,6 +27,9 @@ class HistoryEntity(
     @Column(nullable = false)
     val userName: String,
 
+    @Column(nullable = true)
+    val num: Long?,
+
     @Column(nullable = false)
     val userPhone: String,
 
