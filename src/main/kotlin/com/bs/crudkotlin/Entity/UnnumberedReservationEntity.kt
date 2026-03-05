@@ -35,6 +35,12 @@ class UnnumberedReservationEntity (
     @Column(nullable = false, length = 30)
     var reserved: Boolean = false,
 
+    @Column(nullable = true, length = 500)
+    var filename: String? = null,
+
+    @Column(nullable = true, length = 500)
+    var filePath: String? = null,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "equipment_id")
     var equipment: UnnumberedEquipmentEntity

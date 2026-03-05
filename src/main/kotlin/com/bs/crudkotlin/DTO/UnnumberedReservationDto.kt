@@ -21,14 +21,20 @@ data class UnnumberedReservationDto(
 
     val returnStatus: String,
 
-    val returnPending: Boolean = false
+    val returnPending: Boolean = false,
+
+    var filename: String? = null,
+
+    var filePath: String? = null
 ) {
     //DTO -> Entity
     fun toEntity(equipment: UnnumberedEquipmentEntity) = UnnumberedReservationEntity(
         deadline = deadline,
         startdate = startdate,
         returnStatus = returnStatus,
-        equipment = equipment
+        equipment = equipment,
+        filename = filename,
+        filePath = filePath
     )
 
     //Entity -> DTO
@@ -39,7 +45,9 @@ data class UnnumberedReservationDto(
             startdate = entity.startdate,
             userId = entity.userId,
             returnStatus = entity.returnStatus,
-            returnPending = entity.returnPending
+            returnPending = entity.returnPending,
+            filename = entity.filename,
+            filePath = entity.filePath
         )
     }
 }

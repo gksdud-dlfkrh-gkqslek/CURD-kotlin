@@ -18,7 +18,8 @@ data class HistoryDto(
     val deadline: LocalDate? = null,
     @JsonFormat(pattern = "yyyy-MM-dd")
     val returnDate: LocalDate,
-    val returnStatus: String
+    val returnStatus: String,
+    val filename: String? = null
 ) {
     companion object {
         fun fromEntity(entity: HistoryEntity) = HistoryDto(
@@ -32,7 +33,8 @@ data class HistoryDto(
             reservedDate  = entity.reservedDate,
             deadline      = entity.deadline,
             returnDate    = entity.returnDate,
-            returnStatus  = entity.returnStatus
+            returnStatus  = entity.returnStatus,
+            filename      = entity.filename
         )
     }
 }

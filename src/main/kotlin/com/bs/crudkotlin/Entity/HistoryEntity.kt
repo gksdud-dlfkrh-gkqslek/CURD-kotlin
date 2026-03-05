@@ -45,6 +45,9 @@ class HistoryEntity(
     @Column(nullable = false)
     val returnStatus: String,
 
+    @Column(nullable = true, length = 500)
+    val filename: String? = null,
+
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now()
 )
