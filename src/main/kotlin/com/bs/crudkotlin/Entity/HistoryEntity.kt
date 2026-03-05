@@ -5,6 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Entity
@@ -39,5 +40,8 @@ class HistoryEntity(
     val returnDate: LocalDate = LocalDate.now(),
 
     @Column(nullable = false)
-    val returnStatus: String
+    val returnStatus: String,
+
+    @Column(name = "created_at", nullable = false)
+    val createdAt: LocalDateTime = LocalDateTime.now()
 )
