@@ -32,6 +32,9 @@ class UnnumberedReservationEntity (
     @Column(nullable = false)
     var returnPending: Boolean = false,
 
+    @Column(nullable = false, length = 30)
+    var reserved: Boolean = false,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "equipment_id")
     var equipment: UnnumberedEquipmentEntity

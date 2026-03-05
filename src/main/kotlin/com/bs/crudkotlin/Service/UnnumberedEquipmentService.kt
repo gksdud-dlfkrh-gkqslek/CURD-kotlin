@@ -3,6 +3,7 @@ package com.bs.crudkotlin.Service
 import com.bs.crudkotlin.DTO.ReserveRequest
 import com.bs.crudkotlin.DTO.UnnumberedEquipmentDto
 import com.bs.crudkotlin.DTO.UnnumberedReservationDto
+import com.bs.crudkotlin.Entity.HistoryEntity
 import com.bs.crudkotlin.Entity.UnnumberedEquipmentEntity
 import com.bs.crudkotlin.Entity.UnnumberedReservationEntity
 import com.bs.crudkotlin.Repository.HistoryRepository
@@ -67,7 +68,8 @@ class UnnumberedEquipmentService(
                 deadline = request.deadline,
                 startdate = LocalDate.now(),
                 userId = userId,
-                equipment = entity
+                equipment = entity,
+                reserved = true
             )
 
             unnumberedReservationRepository.save(reservation)
@@ -99,6 +101,23 @@ class UnnumberedEquipmentService(
         val entity = reserverved.equipment
 
         val user = reserverved.userId?.let { userRepository.findById(it).orElse(null) }
+
+        if (user != null) {
+            historyRepository.save(
+                HistoryEntity(
+                    equipmentId = entity.id,
+                    equipmentName = entity.name,
+                    num = null,
+                    userId = user.id,
+                    userName = user.name,
+                    userPhone = user.phone,
+                    reservedDate = reserverved.startdate,
+                    deadline = reserverved.deadline,
+                    returnDate = LocalDate.now(),
+                    returnStatus = reserverved.returnStatus.replace("요청", "")
+                )
+            )
+        }
 
         unnumberedReservationRepository.deleteById(reserverved.id)
 
