@@ -457,10 +457,42 @@
         return false;
       }
       currentUser = await res.json();
+      // 관리자 계정이면 유저 페이지 접근 차단
+      if (currentUser.role === 'ADMIN') {
+        alert('관리자 계정으로 로그인되어 있습니다. 관리자 페이지로 이동합니다.');
+        location.href = '/home.html';
+        return false;
+      }
       renderProfile();
       return true;
     } catch (e) {
       toast('error', '⚠ 서버에 연결할 수 없습니다.');
+      return false;
+    }
+  }
+
+  // ── 세션 유효성 검증 (작업 전 호출)
+  async function verifySession() {
+    try {
+      const res = await fetch(`${API}/auth/me`, { credentials: 'include' });
+      if (res.status === 401) {
+        alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+        location.href = '/login.html';
+        return false;
+      }
+      const user = await res.json();
+      if (user.role === 'ADMIN') {
+        alert('관리자 계정으로 전환되었습니다. 관리자 페이지로 이동합니다.');
+        location.href = '/home.html';
+        return false;
+      }
+      if (user.id !== currentUser?.id) {
+        alert('다른 계정으로 로그인되었습니다. 페이지를 새로고침합니다.');
+        location.reload();
+        return false;
+      }
+      return true;
+    } catch (e) {
       return false;
     }
   }
@@ -668,6 +700,7 @@
   async function submitReserve() {
     const deadline = document.getElementById('deadlineInput').value;
     if (!deadline || !pendingReserveId) return;
+    if (!await verifySession()) return;
 
     document.getElementById('confirmReserveBtn').disabled = true;
     document.getElementById('confirmReserveBtn').textContent = '처리중...';
@@ -724,6 +757,7 @@
 
   async function submitCancel() {
     if (!pendingCancelId) return;
+    if (!await verifySession()) return;
     try {
       const res = await fetch(`${API}/equipments/cancel/${pendingCancelId}`, {
         method: 'PUT',
@@ -802,6 +836,7 @@
   async function submitUnnumberedReserve() {
     const deadline = document.getElementById('unnumberedDeadlineInput').value;
     if (!deadline || !pendingReserveId) return;
+    if (!await verifySession()) return;
 
     document.getElementById('confirmUnnumberedReserveBtn').disabled = true;
     document.getElementById('confirmUnnumberedReserveBtn').textContent = '처리중...';
@@ -919,6 +954,7 @@
   }
 
   async function submitReturn() {
+    if (!await verifySession()) return;
     const returnStatus = document.getElementById('returnStatusSelect').value;
 
     // 번호 없는 장비 반납
@@ -1007,6 +1043,7 @@
   async function cancelUnnumberedReservation(reservationId) {
     const reservation = findUnnumberedReservation(reservationId);
     if (!reservation) return;
+    if (!await verifySession()) return;
 
     if (!confirm(`"${reservation.name}" 예약을 취소하시겠습니까?`)) return;
 
@@ -1090,6 +1127,27 @@
     if (ok) await loadEquipments();
   })();
 
+  // ── 30초마다 세션 체크 (관리자 전환 감지)
+  setInterval(async () => {
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`${API}/auth/me`, { credentials: 'include' });
+      if (res.status === 401) {
+        alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+        location.href = '/login.html';
+        return;
+      }
+      const user = await res.json();
+      if (user.role === 'ADMIN') {
+        alert('관리자 계정으로 전환되었습니다. 관리자 페이지로 이동합니다.');
+        location.href = '/home.html';
+      } else if (user.id !== currentUser.id) {
+        alert('다른 계정으로 로그인되었습니다. 페이지를 새로고침합니다.');
+        location.reload();
+      }
+    } catch (e) {}
+  }, 30000);
+
   // 내 반납 히스토리 조회
 async function loadMyHistory() {
   document.getElementById('historyWrap').innerHTML =
@@ -1118,6 +1176,7 @@ async function loadMyHistory() {
         const sc = h.returnStatus === '정상' ? 'normal' : h.returnStatus === '고장' ? 'repair' : 'broken';
         return `<tr>
           <td><strong>${h.equipmentName}</strong></td>
+          <td><span class="mono">${h.num != null ? h.num : '-'}</span></td>
           <td><span class="mono">${h.reservedDate ?? '-'}</span></td>
           <td><span class="mono">${h.deadline ?? '-'}</span></td>
           <td><span class="mono">${h.returnDate}</span></td>
@@ -1132,7 +1191,7 @@ async function loadMyHistory() {
           <div class="table-wrap">
             <table>
               <thead><tr>
-                <th>장비명</th><th>예약일</th><th>반납기한</th><th>반납일</th><th>반납상태</th>
+                <th>장비명</th><th>번호</th><th>예약일</th><th>반납기한</th><th>반납일</th><th>반납상태</th>
               </tr></thead>
               <tbody>${rows}</tbody>
             </table>

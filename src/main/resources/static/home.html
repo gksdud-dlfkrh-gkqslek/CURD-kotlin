@@ -1252,6 +1252,7 @@
                 const sc = h.returnStatus === '정상' ? 'normal' : h.returnStatus === '고장' ? 'repair' : 'broken';
                 return `<tr>
                     <td><strong>${h.equipmentName}</strong></td>
+                    <td><span class="mono">${h.num != null ? h.num : '-'}</span></td>
                     <td><strong>${h.userName}</strong></td>
                     <td><span class="mono">${h.userPhone}</span></td>
                     <td><span class="mono">${h.reservedDate ?? '-'}</span></td>
@@ -1267,7 +1268,7 @@
                     <div class="table-wrap">
                         <table>
                             <thead><tr>
-                                <th>장비명</th><th>반납자</th><th>전화번호</th><th>예약일</th><th>반납기한</th><th>반납상태</th>
+                                <th>장비명</th><th>번호</th><th>반납자</th><th>전화번호</th><th>예약일</th><th>반납기한</th><th>반납상태</th>
                             </tr></thead>
                             <tbody>${rows}</tbody>
                         </table>
