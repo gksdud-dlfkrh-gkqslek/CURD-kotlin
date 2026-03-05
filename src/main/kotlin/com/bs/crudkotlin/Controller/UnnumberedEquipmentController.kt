@@ -70,4 +70,10 @@ class UnnumberedEquipmentController(
     fun unnumberedPending(): List<UnnumberedReservationDto> {
         return unnumberedEquipmentService.unnumberedPending()
     }
+
+    //예약 취소
+    @PutMapping("/cancel/{id}")
+    fun unnumberedCancelled(@PathVariable id:String):ResponseEntity<String>{
+        return unnumberedEquipmentService.unnumberedCancelled(id)
+    }
 }

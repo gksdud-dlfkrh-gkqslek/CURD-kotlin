@@ -1,10 +1,8 @@
 package com.bs.crudkotlin.Service
 
-import com.bs.crudkotlin.DTO.EquipmentDto
 import com.bs.crudkotlin.DTO.ReserveRequest
 import com.bs.crudkotlin.DTO.UnnumberedEquipmentDto
 import com.bs.crudkotlin.DTO.UnnumberedReservationDto
-import com.bs.crudkotlin.Entity.HistoryEntity
 import com.bs.crudkotlin.Entity.UnnumberedEquipmentEntity
 import com.bs.crudkotlin.Entity.UnnumberedReservationEntity
 import com.bs.crudkotlin.Repository.HistoryRepository
@@ -14,7 +12,6 @@ import com.bs.crudkotlin.Repository.UserRepository
 import jakarta.servlet.http.HttpSession
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
-import org.springframework.web.bind.annotation.RequestBody
 import java.time.LocalDate
 
 @Service
@@ -103,21 +100,6 @@ class UnnumberedEquipmentService(
 
         val user = reserverved.userId?.let { userRepository.findById(it).orElse(null) }
 
-        if (user != null) {
-            historyRepository.save(
-                HistoryEntity(
-                    equipmentId = entity.id,
-                    equipmentName = entity.name,
-                    userId = user.id,
-                    userName = user.name,
-                    userPhone = user.phone,
-                    reservedDate = reserverved.startdate,
-                    deadline = reserverved.deadline,
-                    returnDate = LocalDate.now(),
-                    returnStatus = reserverved.returnStatus.replace("요청", "")
-                )
-            )
-        }
         unnumberedReservationRepository.deleteById(reserverved.id)
 
         entity.stock ++
@@ -133,4 +115,20 @@ class UnnumberedEquipmentService(
         }
     }
 
+    //예약 취소
+    fun unnumberedCancelled(id: String):ResponseEntity<String>{
+        val reserverved = unnumberedReservationRepository.findById(id).orElse(null)
+            ?: return ResponseEntity.notFound().build()
+
+        val entity = reserverved.equipment
+
+        val user = reserverved.userId?.let { userRepository.findById(it).orElse(null) }
+
+        unnumberedReservationRepository.deleteById(reserverved.id)
+
+        entity.stock ++
+        unnumberedEquipmentRepository.save(entity)
+
+        return ResponseEntity.ok("예약 취소 완료")
+    }
 }
