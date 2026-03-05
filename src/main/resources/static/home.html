@@ -470,6 +470,22 @@
     </main>
 </div>
 
+<!-- 사진 보기 모달 -->
+<div class="modal-overlay" id="photoModal" onclick="if(event.target===this)closePhotoModal()">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header">
+      <div class="modal-title">📷 예약 장비 사진</div>
+      <button class="modal-close" onclick="closePhotoModal()">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;justify-content:center;">
+      <img id="photoModalImg" style="max-width:100%;max-height:400px;border-radius:10px;border:1px solid var(--border);"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm btn-outline" onclick="closePhotoModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -479,6 +495,15 @@
     let allUsers           = [];
     let allHistory         = [];
     let pendingAction      = null;
+
+    // ── 사진 보기
+    function openPhotoModal(filename) {
+        document.getElementById('photoModalImg').src = '/uploads/' + filename;
+        document.getElementById('photoModal').classList.add('show');
+    }
+    function closePhotoModal() {
+        document.getElementById('photoModal').classList.remove('show');
+    }
 
     // ── 탭 전환
     function switchTab(tab) {
@@ -914,6 +939,9 @@
                     const statusBadge = isPendingReturn
                         ? `<span class="badge" style="background:var(--yellow-bg);color:var(--yellow);">반납 승인 대기</span>`
                         : `<span class="badge rsv-yes">예약중</span>`;
+                    const photoBtn = rsv.filename
+                        ? `<button class="btn-sm btn-outline" style="height:24px;font-size:.68rem;" onclick="openPhotoModal('${rsv.filename}')">📷 사진</button>`
+                        : '-';
                     return `<tr>
                         <td><span class="mono">${rsv.id?.slice(0,8)}…</span></td>
                         <td><strong>${rsv.equipmentName}</strong></td>
@@ -922,12 +950,13 @@
                         <td><span class="mono">${rsv.startdate ?? '-'}</span></td>
                         <td><span class="mono">${rsv.deadline ?? '-'}</span></td>
                         <td>${statusBadge}</td>
+                        <td>${photoBtn}</td>
                     </tr>`;
                 }).join('');
                 wrap.innerHTML = `
                     <table>
                         <thead><tr>
-                            <th>ID</th><th>장비명</th><th>예약자</th><th>전화번호</th><th>예약일</th><th>반납기한</th><th>상태</th>
+                            <th>ID</th><th>장비명</th><th>예약자</th><th>전화번호</th><th>예약일</th><th>반납기한</th><th>상태</th><th>사진</th>
                         </tr></thead>
                         <tbody>${rows}</tbody>
                     </table>`;
@@ -1139,6 +1168,9 @@
                     for (const eq of allUnnumbered) {
                         if (eq.reservations?.some(r => r.id === rsv.id)) { eqName = eq.name; break; }
                     }
+                    const photoBtn = rsv.filename
+                        ? `<button class="btn-sm btn-outline" style="height:24px;font-size:.68rem;" onclick="openPhotoModal('${rsv.filename}')">📷</button>`
+                        : '';
                     return `<tr>
                         <td><span class="mono">${rsv.id?.slice(0,8)}…</span></td>
                         <td><strong>${eqName}</strong></td>
@@ -1147,8 +1179,11 @@
                         <td><span class="mono">${rsv.startdate ?? '-'}</span></td>
                         <td><span class="mono">${rsv.deadline ?? '-'}</span></td>
                         <td>
+                            <div class="td-actions">
+                            ${photoBtn}
                             <button class="btn-sm btn-primary" style="height:28px;font-size:.72rem;"
                                 onclick="approveUnnumberedReturn('${rsv.id}')">✅ 승인</button>
+                            </div>
                         </td>
                     </tr>`;
                 }).join('');
@@ -1250,6 +1285,9 @@
         const html = Object.entries(grouped).map(([date, items]) => {
             const rows = items.map(h => {
                 const sc = h.returnStatus === '정상' ? 'normal' : h.returnStatus === '고장' ? 'repair' : 'broken';
+                const photoBtn = h.filename
+                    ? `<button class="btn-sm btn-outline" style="height:24px;font-size:.68rem;" onclick="openPhotoModal('${h.filename}')">📷 사진</button>`
+                    : '-';
                 return `<tr>
                     <td><strong>${h.equipmentName}</strong></td>
                     <td><span class="mono">${h.num != null ? h.num : '-'}</span></td>
@@ -1258,6 +1296,7 @@
                     <td><span class="mono">${h.reservedDate ?? '-'}</span></td>
                     <td><span class="mono">${h.deadline ?? '-'}</span></td>
                     <td><span class="badge ${sc}">${h.returnStatus}</span></td>
+                    <td>${photoBtn}</td>
                 </tr>`;
             }).join('');
             return `
@@ -1268,7 +1307,7 @@
                     <div class="table-wrap">
                         <table>
                             <thead><tr>
-                                <th>장비명</th><th>번호</th><th>반납자</th><th>전화번호</th><th>예약일</th><th>반납기한</th><th>반납상태</th>
+                                <th>장비명</th><th>번호</th><th>반납자</th><th>전화번호</th><th>예약일</th><th>반납기한</th><th>반납상태</th><th>사진</th>
                             </tr></thead>
                             <tbody>${rows}</tbody>
                         </table>

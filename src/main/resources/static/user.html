@@ -293,6 +293,14 @@
         <input type="date" class="form-input" id="unnumberedDeadlineInput" oninput="validateUnnumberedDeadline()"/>
         <div class="form-hint" id="unnumberedDeadlineHint">반납할 날짜를 선택하세요 (오늘 이후)</div>
       </div>
+      <div class="form-group">
+        <label class="form-label">장비 사진 <span>*</span></label>
+        <input type="file" class="form-input" id="unnumberedFileInput" accept="image/*" style="padding:.4rem .6rem;height:auto;" onchange="previewUnnumberedPhoto()"/>
+        <div id="unnumberedPhotoPreview" style="margin-top:.5rem;display:none;">
+          <img id="unnumberedPreviewImg" style="max-width:100%;max-height:180px;border-radius:8px;border:1px solid var(--border);"/>
+        </div>
+        <div class="form-hint">예약할 장비의 사진을 첨부해주세요</div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn-modal-cancel" onclick="closeUnnumberedReserveModal()">취소</button>
@@ -325,6 +333,22 @@
       <button class="btn-modal-cancel" onclick="closeReturnModal()">취소</button>
       <button class="btn-modal-confirm" onclick="submitReturn()"
               style="background:var(--green);">반납 요청</button>
+    </div>
+  </div>
+</div>
+
+<!-- 사진 보기 모달 -->
+<div class="modal-overlay" id="photoModal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header">
+      <div class="modal-title">📷 예약 장비 사진</div>
+      <button class="modal-close" onclick="closePhotoModal()">✕</button>
+    </div>
+    <div class="modal-body" style="align-items:center;">
+      <img id="photoModalImg" style="max-width:100%;max-height:400px;border-radius:10px;border:1px solid var(--border);"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-cancel" onclick="closePhotoModal()" style="flex:1;">닫기</button>
     </div>
   </div>
 </div>
@@ -808,6 +832,8 @@
 
   function closeUnnumberedReserveModal() {
     document.getElementById('unnumberedReserveModal').classList.remove('show');
+    document.getElementById('unnumberedFileInput').value = '';
+    document.getElementById('unnumberedPhotoPreview').style.display = 'none';
     pendingReserveId = null;
     pendingReserveType = 'numbered';
   }
@@ -833,20 +859,47 @@
     btn.disabled = false;
   }
 
+  function previewUnnumberedPhoto() {
+    const input = document.getElementById('unnumberedFileInput');
+    const preview = document.getElementById('unnumberedPhotoPreview');
+    const img = document.getElementById('unnumberedPreviewImg');
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => { img.src = e.target.result; preview.style.display = 'block'; };
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      preview.style.display = 'none';
+    }
+  }
+
+  function openPhotoModal(filename) {
+    document.getElementById('photoModalImg').src = '/uploads/' + filename;
+    document.getElementById('photoModal').classList.add('show');
+  }
+  function closePhotoModal() {
+    document.getElementById('photoModal').classList.remove('show');
+  }
+  document.getElementById('photoModal').addEventListener('click', e => { if(e.target === e.currentTarget) closePhotoModal(); });
+
   async function submitUnnumberedReserve() {
     const deadline = document.getElementById('unnumberedDeadlineInput').value;
+    const fileInput = document.getElementById('unnumberedFileInput');
     if (!deadline || !pendingReserveId) return;
+    if (!fileInput.files || !fileInput.files[0]) { toast('error', '장비 사진을 첨부해주세요.'); return; }
     if (!await verifySession()) return;
 
     document.getElementById('confirmUnnumberedReserveBtn').disabled = true;
     document.getElementById('confirmUnnumberedReserveBtn').textContent = '처리중...';
 
     try {
+      const formData = new FormData();
+      formData.append('deadline', deadline);
+      formData.append('file', fileInput.files[0]);
+
       const res = await fetch(`${API}/unnumbered/reserve/${pendingReserveId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
         credentials: 'include',
-        body: JSON.stringify({ deadline })
+        body: formData
       });
 
       if (res.ok) {
@@ -921,6 +974,10 @@
 
           const typeLabel = item.type === 'unnumbered' ? '<span style="display:inline-block;background:var(--accent-lt);color:var(--accent);padding:.1rem .4rem;border-radius:4px;font-size:.65rem;font-weight:600;margin-left:.4rem;">번호없음</span>' : '';
 
+          const photoBtn = (item.type === 'unnumbered' && item.filename)
+            ? `<button class="btn-cancel" style="background:var(--accent-lt);color:var(--accent);border-color:rgba(37,99,235,.3);margin-right:.4rem;" onclick="openPhotoModal('${item.filename}')">📷 사진보기</button>`
+            : '';
+
           return `
             <div class="res-card">
               <div class="res-icon">${item.type === 'unnumbered' ? '📦' : '🖥'}</div>
@@ -932,7 +989,10 @@
                   ${item.type === 'numbered' ? `<div class="res-date-chip"><span class="label">번호</span>${item.num}</div>` : ''}
                 </div>
               </div>
-              ${btn}
+              <div style="display:flex;align-items:center;gap:.3rem;flex-shrink:0;">
+                ${photoBtn}
+                ${btn}
+              </div>
             </div>`;
         }).join('')}
       </div>`;
@@ -1085,7 +1145,8 @@
               deadline: rsv.deadline,
               reservationId: rsv.id,
               returnStatus: rsv.returnStatus,
-              returnPending: rsv.returnPending
+              returnPending: rsv.returnPending,
+              filename: rsv.filename
             });
           }
         });
@@ -1174,6 +1235,9 @@ async function loadMyHistory() {
     const html = Object.entries(grouped).map(([date, items]) => {
       const rows = items.map(h => {
         const sc = h.returnStatus === '정상' ? 'normal' : h.returnStatus === '고장' ? 'repair' : 'broken';
+        const photoBtn = h.filename
+          ? `<button onclick="openPhotoModal('${h.filename}')" style="background:var(--accent);color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:.8rem;">📷 보기</button>`
+          : `<span style="color:#aaa;">-</span>`;
         return `<tr>
           <td><strong>${h.equipmentName}</strong></td>
           <td><span class="mono">${h.num != null ? h.num : '-'}</span></td>
@@ -1181,6 +1245,7 @@ async function loadMyHistory() {
           <td><span class="mono">${h.deadline ?? '-'}</span></td>
           <td><span class="mono">${h.returnDate}</span></td>
           <td><span class="badge ${sc}">${h.returnStatus}</span></td>
+          <td>${photoBtn}</td>
         </tr>`;
       }).join('');
       return `
@@ -1191,7 +1256,7 @@ async function loadMyHistory() {
           <div class="table-wrap">
             <table>
               <thead><tr>
-                <th>장비명</th><th>번호</th><th>예약일</th><th>반납기한</th><th>반납일</th><th>반납상태</th>
+                <th>장비명</th><th>번호</th><th>예약일</th><th>반납기한</th><th>반납일</th><th>반납상태</th><th>사진</th>
               </tr></thead>
               <tbody>${rows}</tbody>
             </table>
