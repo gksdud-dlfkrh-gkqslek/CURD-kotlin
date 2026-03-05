@@ -3,6 +3,7 @@ package com.bs.crudkotlin.Service
 import com.bs.crudkotlin.DTO.ReserveRequest
 import com.bs.crudkotlin.DTO.UnnumberedEquipmentDto
 import com.bs.crudkotlin.DTO.UnnumberedReservationDto
+import com.bs.crudkotlin.DTO.UnnumberedReserveRequest
 import com.bs.crudkotlin.Entity.HistoryEntity
 import com.bs.crudkotlin.Entity.UnnumberedEquipmentEntity
 import com.bs.crudkotlin.Entity.UnnumberedReservationEntity
@@ -13,7 +14,10 @@ import com.bs.crudkotlin.Repository.UserRepository
 import jakarta.servlet.http.HttpSession
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
+import java.io.File
 import java.time.LocalDate
+import java.util.UUID
 
 @Service
 class UnnumberedEquipmentService(
@@ -54,7 +58,7 @@ class UnnumberedEquipmentService(
     }
 
     //번호 없는 장비 예약
-    fun unnumberedReserve(id:String,request: ReserveRequest,session: HttpSession):ResponseEntity<String>{
+    fun unnumberedReserve(id: String, request: UnnumberedReserveRequest, session: HttpSession, file: MultipartFile?):ResponseEntity<String>{
         val entity = unnumberedEquipmentRepository.findById(id).orElse(null)
         ?: return ResponseEntity.notFound().build()
 
@@ -63,13 +67,34 @@ class UnnumberedEquipmentService(
             unnumberedEquipmentRepository.save(entity)
 
             val userId = session.getAttribute("userId") as? String
-            val reservation = UnnumberedReservationEntity(
+            ?: return ResponseEntity.status(401).body("로그인해라")
 
+            var savedFileName: String? = null
+            var savedFilePath: String? = null
+
+            if (file != null && !file.isEmpty) {
+                val uploadDir = File(System.getProperty("user.dir"),"uploads")
+                if (!uploadDir.exists()){
+                    uploadDir.mkdirs()
+                }
+
+                val fileName = "${UUID.randomUUID()}_${file.originalFilename}"  // 파일 충돌 방지
+                val destFile = File(uploadDir, fileName)
+
+                file.transferTo(destFile)
+
+                savedFileName = fileName
+                savedFilePath = destFile.absolutePath
+            }
+
+            val reservation = UnnumberedReservationEntity(
                 deadline = request.deadline,
                 startdate = LocalDate.now(),
                 userId = userId,
                 equipment = entity,
-                reserved = true
+                reserved = true,
+                filename = savedFileName,
+                filePath = savedFilePath
             )
 
             unnumberedReservationRepository.save(reservation)
@@ -114,7 +139,8 @@ class UnnumberedEquipmentService(
                     reservedDate = reserverved.startdate,
                     deadline = reserverved.deadline,
                     returnDate = LocalDate.now(),
-                    returnStatus = reserverved.returnStatus.replace("요청", "")
+                    returnStatus = reserverved.returnStatus.replace("요청", ""),
+                    filename = reserverved.filename
                 )
             )
         }
