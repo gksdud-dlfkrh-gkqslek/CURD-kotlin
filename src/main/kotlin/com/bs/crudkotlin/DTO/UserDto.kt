@@ -1,5 +1,6 @@
 package com.bs.crudkotlin.DTO
 
+import com.bs.crudkotlin.Entity.ApprovalStatus
 import com.bs.crudkotlin.Entity.UserEntity
 import com.bs.crudkotlin.Entity.UserRole
 import jakarta.validation.constraints.Pattern
@@ -26,14 +27,16 @@ data class UserResponse(
     val id: String,
     val phone: String,
     val name: String,
-    val role: UserRole
+    val role: UserRole,
+    val approvalStatus: ApprovalStatus
 ) {
     companion object {
         fun from(entity: UserEntity) = UserResponse(
             id = entity.id,
             phone = entity.phone,
             name = entity.name,
-            role = entity.role
+            role = entity.role,
+            approvalStatus = entity.approvalStatus
         )
     }
 }
