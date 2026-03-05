@@ -4,6 +4,7 @@ import com.bs.crudkotlin.DTO.EquipmentDto
 import com.bs.crudkotlin.DTO.ReserveRequest
 import com.bs.crudkotlin.DTO.ReturnRequest
 import com.bs.crudkotlin.DTO.UnnumberedEquipmentDto
+import com.bs.crudkotlin.DTO.UnnumberedReservationDto
 import com.bs.crudkotlin.DTO.UnnumberedReturnRequest
 import com.bs.crudkotlin.Service.UnnumberedEquipmentService
 import jakarta.servlet.http.HttpSession
@@ -65,4 +66,8 @@ class UnnumberedEquipmentController(
     }
 
     //번호 없는 장비 반납 대기 목록
+    @GetMapping("/return/pending")
+    fun unnumberedPending(): List<UnnumberedReservationDto> {
+        return unnumberedEquipmentService.unnumberedPending()
+    }
 }

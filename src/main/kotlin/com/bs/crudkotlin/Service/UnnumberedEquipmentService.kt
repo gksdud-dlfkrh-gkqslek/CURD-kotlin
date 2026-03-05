@@ -3,6 +3,7 @@ package com.bs.crudkotlin.Service
 import com.bs.crudkotlin.DTO.EquipmentDto
 import com.bs.crudkotlin.DTO.ReserveRequest
 import com.bs.crudkotlin.DTO.UnnumberedEquipmentDto
+import com.bs.crudkotlin.DTO.UnnumberedReservationDto
 import com.bs.crudkotlin.Entity.HistoryEntity
 import com.bs.crudkotlin.Entity.UnnumberedEquipmentEntity
 import com.bs.crudkotlin.Entity.UnnumberedReservationEntity
@@ -123,6 +124,13 @@ class UnnumberedEquipmentService(
         unnumberedEquipmentRepository.save(entity)
 
         return ResponseEntity.ok("반납 승인 완료")
+    }
+
+    //번호 없는 장비 반납 대기 목록
+    fun unnumberedPending(): List<UnnumberedReservationDto>{
+        return unnumberedReservationRepository.findByReturnPending(true).map {
+            UnnumberedReservationDto.fromEntity(it)
+        }
     }
 
 }
