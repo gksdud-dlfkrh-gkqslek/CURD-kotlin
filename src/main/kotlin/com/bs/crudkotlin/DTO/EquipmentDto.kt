@@ -16,15 +16,18 @@ data class EquipmentDto(
     val deadline: LocalDate?,
     val reserved: Boolean = false,
     val userId: String? = null,
-    val returnPending: Boolean = false
-
+    val returnPending: Boolean = false,
+    var filename: String? = null,
+    var filePath: String? = null
 ) {
 
     // DTO -> Entity
     fun toEntity() = EquipmentEntity(
         num = num,
         name = name,
-        status = status
+        status = status,
+        filename = filename,
+        filePath = filePath
     )
 
     //Entity -> DTO
@@ -38,7 +41,9 @@ data class EquipmentDto(
             deadline = entity.deadline,
             reserved = entity.reserved,
             userId = entity.userId,
-            returnPending = entity.returnPending
+            returnPending = entity.returnPending,
+            filename = entity.filename,
+            filePath = entity.filePath
         )
     }
 }

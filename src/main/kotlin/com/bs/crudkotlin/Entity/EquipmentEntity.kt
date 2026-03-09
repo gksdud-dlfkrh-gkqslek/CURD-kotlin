@@ -43,5 +43,11 @@ class EquipmentEntity(
     var userId: String? = null,
 
     @Column(nullable = false)
-    var returnPending: Boolean = false
+    var returnPending: Boolean = false,
+
+    @Column(nullable = true, length = 500)
+    var filename: String? = null,
+
+    @Column(nullable = true, length = 500)
+    var filePath: String? = null
 )

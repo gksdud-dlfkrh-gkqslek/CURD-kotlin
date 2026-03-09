@@ -343,6 +343,10 @@
                             <option value="고장">고장</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">장비 사진</label>
+                        <input type="file" class="form-input" id="addPhoto" accept="image/*" style="padding:.35rem .5rem;"/>
+                    </div>
                 </div>
                 <div class="form-footer">
                     <button class="btn-sm btn-outline" onclick="clearAddForm()">초기화</button>
@@ -670,6 +674,9 @@
                 ? `<span style="font-size:.7rem;color:var(--text-dim);">예약중</span>`
                 : `<button class="btn-icon edit" onclick="openEditModal('${eq.id}')">✏️</button>
                    <button class="btn-icon del" data-id="${eq.id}" data-name="${eq.name}" onclick="handleDelete(this)">🗑</button>`;
+            const photoBtn = eq.filename
+                ? `<button class="btn-sm btn-outline" style="height:24px;font-size:.68rem;" onclick="openPhotoModal('${eq.filename}')">📷 사진</button>`
+                : '<span style="font-size:.7rem;color:var(--text-dim);">없음</span>';
             return `<tr>
                 <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
                 <td>${eq.num}</td>
@@ -678,6 +685,7 @@
                 <td><span class="badge ${eq.reserved ? 'rsv-yes' : 'rsv-no'}">${eq.reserved ? '예약됨' : '가능'}</span></td>
                 <td><span class="mono">${eq.startdate ?? '-'}</span></td>
                 <td><span class="mono">${eq.deadline ?? '-'}</span></td>
+                <td>${photoBtn}</td>
                 <td><div class="td-actions">${actions}</div></td>
             </tr>`;
         }).join('');
@@ -685,7 +693,7 @@
         wrap.innerHTML = `
             <table>
                 <thead><tr>
-                    <th>ID</th><th>번호</th><th>장비명</th><th>상태</th><th>예약</th><th>예약일</th><th>반납기한</th><th>관리</th>
+                    <th>ID</th><th>번호</th><th>장비명</th><th>상태</th><th>예약</th><th>예약일</th><th>반납기한</th><th>사진</th><th>관리</th>
                 </tr></thead>
                 <tbody>${rows}</tbody>
             </table>`;
@@ -730,11 +738,19 @@
         const num    = document.getElementById('addNum').value;
         const name   = document.getElementById('addName').value.trim();
         const status = document.getElementById('addStatus').value;
+        const fileInput = document.getElementById('addPhoto');
         if (!num || !name) { toast('error', '번호와 장비명을 입력해주세요.'); return; }
         try {
+            const formData = new FormData();
+            formData.append('num', num);
+            formData.append('name', name);
+            formData.append('status', status);
+            if (fileInput.files && fileInput.files[0]) {
+                formData.append('file', fileInput.files[0]);
+            }
             const res = await fetch(`${API}/equipments`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-                body: JSON.stringify({ num: Number(num), name, status })
+                method: 'POST', credentials: 'include',
+                body: formData
             });
             if (res.ok) { toast('success', `✅ "${name}" 장비가 등록되었습니다.`); clearAddForm(); await loadEquipments(); }
             else toast('error', '❌ 등록에 실패했습니다.');
@@ -745,6 +761,7 @@
         document.getElementById('addNum').value    = '';
         document.getElementById('addName').value   = '';
         document.getElementById('addStatus').value = '정상';
+        document.getElementById('addPhoto').value  = '';
     }
 
     // ══════════════════════════════════════
@@ -882,6 +899,9 @@
                     const statusBadge = isPendingReturn
                         ? `<span class="badge" style="background:var(--yellow-bg);color:var(--yellow);">반납 승인 대기</span>`
                         : `<span class="badge rsv-yes">예약중</span>`;
+                    const photoBtn = eq.filename
+                        ? `<button class="btn-sm btn-outline" style="height:24px;font-size:.68rem;" onclick="openPhotoModal('${eq.filename}')">📷 사진</button>`
+                        : '<span style="font-size:.7rem;color:var(--text-dim);">없음</span>';
                     return `<tr>
                         <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
                         <td>${eq.num}</td>
@@ -891,12 +911,13 @@
                         <td><span class="mono">${eq.startdate ?? '-'}</span></td>
                         <td><span class="mono">${eq.deadline ?? '-'}</span></td>
                         <td>${statusBadge}</td>
+                        <td>${photoBtn}</td>
                     </tr>`;
                 }).join('');
                 document.getElementById('reservationWrap').innerHTML = `
                     <table>
                         <thead><tr>
-                            <th>ID</th><th>번호</th><th>장비명</th><th>예약자</th><th>전화번호</th><th>예약일</th><th>반납기한</th><th>상태</th>
+                            <th>ID</th><th>번호</th><th>장비명</th><th>예약자</th><th>전화번호</th><th>예약일</th><th>반납기한</th><th>상태</th><th>사진</th>
                         </tr></thead>
                         <tbody>${rows}</tbody>
                     </table>`;
@@ -1132,6 +1153,9 @@
                     const user = users.find(u => u.id === eq.userId);
                     const displayStatus = eq.status.replace('요청', '');
                     const sc = displayStatus === '정상' ? 'normal' : displayStatus === '고장' ? 'repair' : 'broken';
+                    const photoBtn = eq.filename
+                        ? `<button class="btn-sm btn-outline" style="height:24px;font-size:.68rem;" onclick="openPhotoModal('${eq.filename}')">📷</button>`
+                        : '';
                     return `<tr>
                         <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
                         <td>${eq.num}</td>
@@ -1140,6 +1164,7 @@
                         <td><span class="badge ${sc}">${displayStatus}</span></td>
                         <td><span class="mono">${eq.startdate ?? '-'}</span></td>
                         <td><span class="mono">${eq.deadline ?? '-'}</span></td>
+                        <td>${photoBtn}</td>
                         <td>
                             <button class="btn-sm btn-primary" style="height:28px;font-size:.72rem;"
                                 onclick="approveReturn('${eq.id}')">✅ 승인</button>
@@ -1149,7 +1174,7 @@
                 document.getElementById('returnPendingWrap').innerHTML = `
                     <table>
                         <thead><tr>
-                            <th>ID</th><th>번호</th><th>장비명</th><th>반납자</th><th>반납상태</th><th>예약일</th><th>반납기한</th><th>관리</th>
+                            <th>ID</th><th>번호</th><th>장비명</th><th>반납자</th><th>반납상태</th><th>예약일</th><th>반납기한</th><th>사진</th><th>관리</th>
                         </tr></thead>
                         <tbody>${rows}</tbody>
                     </table>`;

@@ -14,7 +14,10 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
+
 @RestController
 @RequestMapping("/api/equipments")
 class EquipmentController(val equipmentService: EquipmentService) {
@@ -38,9 +41,15 @@ class EquipmentController(val equipmentService: EquipmentService) {
     }
 
     // 장비 등록
-    @PostMapping()
-    fun post(@RequestBody equipmentDto: EquipmentDto): ResponseEntity<Any> {
-        return equipmentService.create(equipmentDto)
+    @PostMapping(consumes = ["multipart/form-data"])
+    fun post(
+        @RequestParam("num") num: Long,
+        @RequestParam("name") name: String,
+        @RequestParam("status") status: String,
+        @RequestParam("file", required = false) file: MultipartFile?,
+    ): ResponseEntity<Any> {
+        val equipmentDto = EquipmentDto(num = num, name = name, status = status, deadline = null)
+        return equipmentService.create(equipmentDto, file)
     }
 
     // 예약

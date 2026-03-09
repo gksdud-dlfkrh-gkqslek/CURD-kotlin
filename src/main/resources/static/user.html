@@ -785,6 +785,9 @@
       } else {
         btn = `<button class="btn-reserve can" onclick="openReserveModal('${eq.id}')">예약하기</button>`;
       }
+      const photoBtn = eq.filename
+        ? `<button class="btn-sm" style="height:24px;font-size:.68rem;background:var(--accent-lt);color:var(--accent);border:1px solid rgba(37,99,235,.2);border-radius:6px;cursor:pointer;padding:0 8px;" onclick="openPhotoModal('${eq.filename}')">📷 사진</button>`
+        : '<span style="font-size:.7rem;color:var(--text-dim);">없음</span>';
       return `<tr>
         <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
         <td>${eq.num}</td>
@@ -793,6 +796,7 @@
         <td><span class="badge ${eq.reserved ? 'rsv-yes' : 'available'}">${eq.reserved ? '예약됨' : '가능'}</span></td>
         <td><span class="mono">${eq.startdate ?? '-'}</span></td>
         <td><span class="mono">${eq.deadline ?? '-'}</span></td>
+        <td>${photoBtn}</td>
         <td>${btn}</td>
       </tr>`;
     }).join('');
@@ -802,7 +806,7 @@
         <thead>
           <tr>
             <th>ID</th><th>번호</th><th>장비명</th><th>상태</th><th>예약여부</th>
-            <th>예약일</th><th>반납기한</th><th>액션</th>
+            <th>예약일</th><th>반납기한</th><th>사진</th><th>액션</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -1075,7 +1079,8 @@
         deadline: eq.deadline,
         num: eq.num,
         reservationId: eq.id,
-        returnPending: eq.returnPending
+        returnPending: eq.returnPending,
+        filename: eq.filename
       })),
       ...myUnnumbered
     ];
@@ -1114,7 +1119,7 @@
 
           const typeLabel = item.type === 'unnumbered' ? '<span style="display:inline-block;background:var(--accent-lt);color:var(--accent);padding:.1rem .4rem;border-radius:4px;font-size:.65rem;font-weight:600;margin-left:.4rem;">번호없음</span>' : '';
 
-          const photoBtn = (item.type === 'unnumbered' && item.filename)
+          const photoBtn = item.filename
             ? `<button class="btn-cancel" style="background:var(--accent-lt);color:var(--accent);border-color:rgba(37,99,235,.3);margin-right:.4rem;" onclick="openPhotoModal('${item.filename}')">📷 사진보기</button>`
             : '';
 

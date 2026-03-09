@@ -13,7 +13,10 @@ import org.springframework.http.ResponseEntity
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
+import java.io.File
 import java.time.LocalDate
+import java.util.UUID
 import kotlin.collections.map
 
 @Service
@@ -27,17 +30,9 @@ class EquipmentService(
 
     // 전체 조회
     fun findAll(): List<EquipmentDto> {
+
         return equipmentRepository.findAll().map {
-            EquipmentDto(
-                it.id,
-                it.num,
-                it.name,
-                it.status,
-                it.startdate,
-                it.deadline,
-                it.reserved,
-                it.userId
-            ) }
+            EquipmentDto.fromEntity(it) }
     }
 
     // num값으로 조회
@@ -57,8 +52,30 @@ class EquipmentService(
     }
 
     // 장비 등록
-    fun create(equipmentDto: EquipmentDto): ResponseEntity<Any> {
+    fun create(equipmentDto: EquipmentDto,file: MultipartFile?): ResponseEntity<Any> {
         val entity = equipmentDto.toEntity()
+
+        var savedFileName: String? = null
+        var savedFilePath: String? = null
+
+        if (file != null && !file.isEmpty) {
+            val uploadDir = File(System.getProperty("user.dir"),"uploads")
+            if (!uploadDir.exists()){
+                uploadDir.mkdirs()
+            }
+
+            val fileName = "${UUID.randomUUID()}_${file.originalFilename}"  // 파일 충돌 방지
+            val destFile = File(uploadDir, fileName)
+
+            file.transferTo(destFile)
+
+            savedFileName = fileName
+            savedFilePath = destFile.absolutePath
+        }
+
+        entity.filename = savedFileName
+        entity.filePath = savedFilePath
+
         val fromcreate = equipmentRepository.save(entity)
         val responseDto = EquipmentDto.fromEntity(fromcreate)
         return ResponseEntity.ok(responseDto)
@@ -95,6 +112,8 @@ class EquipmentService(
         entity.num = equipmentDto.num
         entity.name = equipmentDto.name
         entity.status = equipmentDto.status
+        entity.filename = equipmentDto.filename
+        entity.filePath = equipmentDto.filePath
         equipmentRepository.save(entity)
         return ResponseEntity.ok("정보 수정 완료")
     }
