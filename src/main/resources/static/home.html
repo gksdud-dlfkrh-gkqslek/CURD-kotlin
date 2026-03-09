@@ -674,18 +674,17 @@
                 ? `<span style="font-size:.7rem;color:var(--text-dim);">예약중</span>`
                 : `<button class="btn-icon edit" onclick="openEditModal('${eq.id}')">✏️</button>
                    <button class="btn-icon del" data-id="${eq.id}" data-name="${eq.name}" onclick="handleDelete(this)">🗑</button>`;
-            const photoBtn = eq.filename
-                ? `<button class="btn-sm btn-outline" style="height:24px;font-size:.68rem;" onclick="openPhotoModal('${eq.filename}')">📷 사진</button>`
-                : '<span style="font-size:.7rem;color:var(--text-dim);">없음</span>';
+            const photoTd = eq.filename
+                ? `<td style="text-align:center;"><img src="/uploads/${eq.filename}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${eq.filename}')"/></td>`
+                : `<td style="text-align:center;"><div style="width:48px;height:48px;border-radius:6px;background:var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--text-dim);">없음</div></td>`;
             return `<tr>
-                <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
+                ${photoTd}
                 <td>${eq.num}</td>
                 <td><strong>${eq.name}</strong></td>
                 <td><span class="badge ${sc}">${eq.status}</span></td>
                 <td><span class="badge ${eq.reserved ? 'rsv-yes' : 'rsv-no'}">${eq.reserved ? '예약됨' : '가능'}</span></td>
                 <td><span class="mono">${eq.startdate ?? '-'}</span></td>
                 <td><span class="mono">${eq.deadline ?? '-'}</span></td>
-                <td>${photoBtn}</td>
                 <td><div class="td-actions">${actions}</div></td>
             </tr>`;
         }).join('');
@@ -693,7 +692,7 @@
         wrap.innerHTML = `
             <table>
                 <thead><tr>
-                    <th>ID</th><th>번호</th><th>장비명</th><th>상태</th><th>예약</th><th>예약일</th><th>반납기한</th><th>사진</th><th>관리</th>
+                    <th>사진</th><th>번호</th><th>장비명</th><th>상태</th><th>예약</th><th>예약일</th><th>반납기한</th><th>관리</th>
                 </tr></thead>
                 <tbody>${rows}</tbody>
             </table>`;
@@ -899,11 +898,11 @@
                     const statusBadge = isPendingReturn
                         ? `<span class="badge" style="background:var(--yellow-bg);color:var(--yellow);">반납 승인 대기</span>`
                         : `<span class="badge rsv-yes">예약중</span>`;
-                    const photoBtn = eq.filename
-                        ? `<button class="btn-sm btn-outline" style="height:24px;font-size:.68rem;" onclick="openPhotoModal('${eq.filename}')">📷 사진</button>`
-                        : '<span style="font-size:.7rem;color:var(--text-dim);">없음</span>';
+                    const photoTd = eq.filename
+                        ? `<td style="text-align:center;"><img src="/uploads/${eq.filename}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${eq.filename}')"/></td>`
+                        : `<td style="text-align:center;"><div style="width:40px;height:40px;border-radius:6px;background:var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--text-dim);">없음</div></td>`;
                     return `<tr>
-                        <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
+                        ${photoTd}
                         <td>${eq.num}</td>
                         <td><strong>${eq.name}</strong></td>
                         <td>${user ? `<strong>${user.name}</strong>` : '<span style="color:var(--text-dim)">알 수 없음</span>'}</td>
@@ -911,13 +910,12 @@
                         <td><span class="mono">${eq.startdate ?? '-'}</span></td>
                         <td><span class="mono">${eq.deadline ?? '-'}</span></td>
                         <td>${statusBadge}</td>
-                        <td>${photoBtn}</td>
                     </tr>`;
                 }).join('');
                 document.getElementById('reservationWrap').innerHTML = `
                     <table>
                         <thead><tr>
-                            <th>ID</th><th>번호</th><th>장비명</th><th>예약자</th><th>전화번호</th><th>예약일</th><th>반납기한</th><th>상태</th><th>사진</th>
+                            <th>사진</th><th>번호</th><th>장비명</th><th>예약자</th><th>전화번호</th><th>예약일</th><th>반납기한</th><th>상태</th>
                         </tr></thead>
                         <tbody>${rows}</tbody>
                     </table>`;
@@ -960,24 +958,23 @@
                     const statusBadge = isPendingReturn
                         ? `<span class="badge" style="background:var(--yellow-bg);color:var(--yellow);">반납 승인 대기</span>`
                         : `<span class="badge rsv-yes">예약중</span>`;
-                    const photoBtn = rsv.filename
-                        ? `<button class="btn-sm btn-outline" style="height:24px;font-size:.68rem;" onclick="openPhotoModal('${rsv.filename}')">📷 사진</button>`
-                        : '-';
+                    const photoTd = rsv.filename
+                        ? `<td style="text-align:center;"><img src="/uploads/${rsv.filename}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${rsv.filename}')"/></td>`
+                        : `<td style="text-align:center;"><div style="width:40px;height:40px;border-radius:6px;background:var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--text-dim);">없음</div></td>`;
                     return `<tr>
-                        <td><span class="mono">${rsv.id?.slice(0,8)}…</span></td>
+                        ${photoTd}
                         <td><strong>${rsv.equipmentName}</strong></td>
                         <td>${user ? `<strong>${user.name}</strong>` : '<span style="color:var(--text-dim)">알 수 없음</span>'}</td>
                         <td>${user ? `<span class="mono">${user.phone}</span>` : '-'}</td>
                         <td><span class="mono">${rsv.startdate ?? '-'}</span></td>
                         <td><span class="mono">${rsv.deadline ?? '-'}</span></td>
                         <td>${statusBadge}</td>
-                        <td>${photoBtn}</td>
                     </tr>`;
                 }).join('');
                 wrap.innerHTML = `
                     <table>
                         <thead><tr>
-                            <th>ID</th><th>장비명</th><th>예약자</th><th>전화번호</th><th>예약일</th><th>반납기한</th><th>상태</th><th>사진</th>
+                            <th>사진</th><th>장비명</th><th>예약자</th><th>전화번호</th><th>예약일</th><th>반납기한</th><th>상태</th>
                         </tr></thead>
                         <tbody>${rows}</tbody>
                     </table>`;
@@ -1153,18 +1150,17 @@
                     const user = users.find(u => u.id === eq.userId);
                     const displayStatus = eq.status.replace('요청', '');
                     const sc = displayStatus === '정상' ? 'normal' : displayStatus === '고장' ? 'repair' : 'broken';
-                    const photoBtn = eq.filename
-                        ? `<button class="btn-sm btn-outline" style="height:24px;font-size:.68rem;" onclick="openPhotoModal('${eq.filename}')">📷</button>`
-                        : '';
+                    const photoTd = eq.filename
+                        ? `<td style="text-align:center;"><img src="/uploads/${eq.filename}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${eq.filename}')"/></td>`
+                        : `<td style="text-align:center;"><div style="width:40px;height:40px;border-radius:6px;background:var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--text-dim);">없음</div></td>`;
                     return `<tr>
-                        <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
+                        ${photoTd}
                         <td>${eq.num}</td>
                         <td><strong>${eq.name}</strong></td>
                         <td>${user ? `<strong>${user.name}</strong>` : '<span style="color:var(--text-dim)">알 수 없음</span>'}</td>
                         <td><span class="badge ${sc}">${displayStatus}</span></td>
                         <td><span class="mono">${eq.startdate ?? '-'}</span></td>
                         <td><span class="mono">${eq.deadline ?? '-'}</span></td>
-                        <td>${photoBtn}</td>
                         <td>
                             <button class="btn-sm btn-primary" style="height:28px;font-size:.72rem;"
                                 onclick="approveReturn('${eq.id}')">✅ 승인</button>
@@ -1174,7 +1170,7 @@
                 document.getElementById('returnPendingWrap').innerHTML = `
                     <table>
                         <thead><tr>
-                            <th>ID</th><th>번호</th><th>장비명</th><th>반납자</th><th>반납상태</th><th>예약일</th><th>반납기한</th><th>사진</th><th>관리</th>
+                            <th>사진</th><th>번호</th><th>장비명</th><th>반납자</th><th>반납상태</th><th>예약일</th><th>반납기한</th><th>관리</th>
                         </tr></thead>
                         <tbody>${rows}</tbody>
                     </table>`;
@@ -1207,29 +1203,26 @@
                     for (const eq of allUnnumbered) {
                         if (eq.reservations?.some(r => r.id === rsv.id)) { eqName = eq.name; break; }
                     }
-                    const photoBtn = rsv.filename
-                        ? `<button class="btn-sm btn-outline" style="height:24px;font-size:.68rem;" onclick="openPhotoModal('${rsv.filename}')">📷</button>`
-                        : '';
+                    const photoTd = rsv.filename
+                        ? `<td style="text-align:center;"><img src="/uploads/${rsv.filename}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${rsv.filename}')"/></td>`
+                        : `<td style="text-align:center;"><div style="width:40px;height:40px;border-radius:6px;background:var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--text-dim);">없음</div></td>`;
                     return `<tr>
-                        <td><span class="mono">${rsv.id?.slice(0,8)}…</span></td>
+                        ${photoTd}
                         <td><strong>${eqName}</strong></td>
                         <td>${user ? `<strong>${user.name}</strong>` : '<span style="color:var(--text-dim)">알 수 없음</span>'}</td>
                         <td><span class="mono">${rsv.returnStatus ?? '-'}</span></td>
                         <td><span class="mono">${rsv.startdate ?? '-'}</span></td>
                         <td><span class="mono">${rsv.deadline ?? '-'}</span></td>
                         <td>
-                            <div class="td-actions">
-                            ${photoBtn}
                             <button class="btn-sm btn-primary" style="height:28px;font-size:.72rem;"
                                 onclick="approveUnnumberedReturn('${rsv.id}')">✅ 승인</button>
-                            </div>
                         </td>
                     </tr>`;
                 }).join('');
                 wrap.innerHTML = `
                     <table>
                         <thead><tr>
-                            <th>ID</th><th>장비명</th><th>반납자</th><th>반납상태</th><th>예약일</th><th>반납기한</th><th>관리</th>
+                            <th>사진</th><th>장비명</th><th>반납자</th><th>반납상태</th><th>예약일</th><th>반납기한</th><th>관리</th>
                         </tr></thead>
                         <tbody>${rows}</tbody>
                     </table>`;

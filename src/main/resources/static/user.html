@@ -785,18 +785,17 @@
       } else {
         btn = `<button class="btn-reserve can" onclick="openReserveModal('${eq.id}')">예약하기</button>`;
       }
-      const photoBtn = eq.filename
-        ? `<button class="btn-sm" style="height:24px;font-size:.68rem;background:var(--accent-lt);color:var(--accent);border:1px solid rgba(37,99,235,.2);border-radius:6px;cursor:pointer;padding:0 8px;" onclick="openPhotoModal('${eq.filename}')">📷 사진</button>`
-        : '<span style="font-size:.7rem;color:var(--text-dim);">없음</span>';
+      const photoTd = eq.filename
+        ? `<td style="text-align:center;"><img src="/uploads/${eq.filename}" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${eq.filename}')"/></td>`
+        : `<td style="text-align:center;"><div style="width:44px;height:44px;border-radius:6px;background:var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--text-dim);">없음</div></td>`;
       return `<tr>
-        <td><span class="mono">${eq.id?.slice(0,8)}…</span></td>
+        ${photoTd}
         <td>${eq.num}</td>
         <td><strong>${eq.name}</strong></td>
         <td><span class="badge ${statusCls}">${eq.status}</span></td>
         <td><span class="badge ${eq.reserved ? 'rsv-yes' : 'available'}">${eq.reserved ? '예약됨' : '가능'}</span></td>
         <td><span class="mono">${eq.startdate ?? '-'}</span></td>
         <td><span class="mono">${eq.deadline ?? '-'}</span></td>
-        <td>${photoBtn}</td>
         <td>${btn}</td>
       </tr>`;
     }).join('');
@@ -805,8 +804,8 @@
       <table>
         <thead>
           <tr>
-            <th>ID</th><th>번호</th><th>장비명</th><th>상태</th><th>예약여부</th>
-            <th>예약일</th><th>반납기한</th><th>사진</th><th>액션</th>
+            <th>사진</th><th>번호</th><th>장비명</th><th>상태</th><th>예약여부</th>
+            <th>예약일</th><th>반납기한</th><th>액션</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
