@@ -89,4 +89,10 @@ class AuthController(private val authService: AuthService) {
         authService.delete(id)
         return ResponseEntity.ok("삭제 완료")
     }
+
+    //관리자 권한
+    @PutMapping("/admin/{id}")
+    fun admin(@PathVariable id: String): ResponseEntity<String>? {
+        return  authService.admin(id)
+    }
 }

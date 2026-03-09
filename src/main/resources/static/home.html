@@ -1010,6 +1010,8 @@
                         <div class="td-actions">
                             <button class="btn-sm btn-outline" style="height:28px;font-size:.72rem;"
                                 onclick="showUserReservations('${u.id}', '${u.name}')">📌 예약</button>
+                            <button class="btn-sm" style="height:28px;font-size:.72rem;background:var(--accent2);color:#fff;border:none;border-radius:6px;cursor:pointer;padding:0 8px;"
+                                data-id="${u.id}" data-name="${u.name}" onclick="handleGrantAdmin(this)">🛡 관리자</button>
                             <button class="btn-icon del" data-id="${u.id}" data-name="${u.name}" onclick="handleUserDelete(this)">🗑</button>
                         </div>
                     </td>
@@ -1032,6 +1034,18 @@
 
     function handleUserDelete(btn) {
         openConfirm('유저 삭제', `"${btn.dataset.name}" 유저를 삭제하시겠습니까?`, () => deleteUser(btn.dataset.id));
+    }
+
+    async function grantAdmin(id) {
+        try {
+            const res = await fetch(`${API}/auth/admin/${id}`, { method: 'PUT', credentials: 'include' });
+            if (res.ok) { toast('success', '🛡 관리자 권한이 부여되었습니다.'); closeModal('confirmModal'); await loadUsers(); }
+            else toast('error', '❌ 관리자 권한 부여 실패');
+        } catch (e) { toast('error', '❌ 서버 연결 오류'); }
+    }
+
+    function handleGrantAdmin(btn) {
+        openConfirm('관리자 권한 부여', `"${btn.dataset.name}" 유저에게 관리자 권한을 부여하시겠습니까?`, () => grantAdmin(btn.dataset.id));
     }
 
     // ══════════════════════════════════════

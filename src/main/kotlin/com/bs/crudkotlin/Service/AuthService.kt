@@ -116,4 +116,13 @@ class AuthService(
         userRepository.save(user)
         return ResponseEntity.ok("승인 완료")
     }
+
+    //관리자 권한
+    fun admin(id: String): ResponseEntity<String>{
+        val user = userRepository.findById(id).orElse(null)
+        ?: return ResponseEntity.notFound().build()
+        user.role = UserRole.ADMIN
+        userRepository.save(user)
+        return ResponseEntity.ok("관리자 권한")
+    }
 }
