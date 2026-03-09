@@ -155,7 +155,9 @@ class EquipmentService(
                     reservedDate = entity.startdate,
                     deadline = entity.deadline,
                     returnDate = LocalDate.now(),
-                    returnStatus = entity.status.replace("요청", "")
+                    returnStatus = entity.status.replace("요청", ""),
+                    filename = entity.filename,
+                    filePath = entity.filePath
                 )
             )
         }
