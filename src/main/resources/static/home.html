@@ -1370,7 +1370,11 @@
             if (userEquips.length) {
                 const rows = userEquips.map(eq => {
                     const sc = eq.status === '정상' ? 'normal' : eq.status === '수리' ? 'repair' : 'broken';
+                    const photoTd = eq.filename
+                        ? `<td style="text-align:center;"><img src="/uploads/${eq.filename}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${eq.filename}')"/></td>`
+                        : `<td style="text-align:center;color:#aaa;">-</td>`;
                     return `<tr>
+                        ${photoTd}
                         <td><strong>${eq.name}</strong></td>
                         <td><span class="badge ${sc}">${eq.status}</span></td>
                         <td><span class="mono">${eq.startdate ?? '-'}</span></td>
@@ -1382,7 +1386,7 @@
                         <div style="font-size:.75rem;font-weight:700;color:var(--yellow);margin-bottom:.5rem;">📌 현재 예약 중</div>
                         <div class="table-wrap">
                             <table>
-                                <thead><tr><th>장비명</th><th>상태</th><th>예약일</th><th>반납기한</th></tr></thead>
+                                <thead><tr><th>사진</th><th>장비명</th><th>상태</th><th>예약일</th><th>반납기한</th></tr></thead>
                                 <tbody>${rows}</tbody>
                             </table>
                         </div>
@@ -1407,7 +1411,11 @@
                 const groupHtml = Object.entries(grouped).map(([date, items]) => {
                     const rows = items.map(h => {
                         const sc = h.returnStatus === '정상' ? 'normal' : h.returnStatus === '고장' ? 'repair' : 'broken';
+                        const photoTd = h.filename
+                            ? `<td style="text-align:center;"><img src="/uploads/${h.filename}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${h.filename}')"/></td>`
+                            : `<td style="text-align:center;color:#aaa;">-</td>`;
                         return `<tr>
+                            ${photoTd}
                             <td><strong>${h.equipmentName}</strong></td>
                             <td><span class="mono">${h.reservedDate ?? '-'}</span></td>
                             <td><span class="mono">${h.deadline ?? '-'}</span></td>
@@ -1422,7 +1430,7 @@
                             </div>
                             <div class="table-wrap">
                                 <table>
-                                    <thead><tr><th>장비명</th><th>예약일</th><th>반납기한</th><th>반납일</th><th>반납상태</th></tr></thead>
+                                    <thead><tr><th>사진</th><th>장비명</th><th>예약일</th><th>반납기한</th><th>반납일</th><th>반납상태</th></tr></thead>
                                     <tbody>${rows}</tbody>
                                 </table>
                             </div>
