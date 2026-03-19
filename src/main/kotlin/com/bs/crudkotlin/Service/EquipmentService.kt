@@ -14,9 +14,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import java.io.File
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.collections.map
 
 @Service
@@ -25,7 +23,8 @@ class EquipmentService(
     private val equipmentRepository: EquipmentRepository,
     private val historyRepository: HistoryRepository,
     private val userRepository: UserRepository,
-    private val historyCleanupService: HistoryCleanupService
+    private val historyCleanupService: HistoryCleanupService,
+    private val supabaseStorageService: SupabaseStorageService
 ) {
 
     // 전체 조회
@@ -59,18 +58,8 @@ class EquipmentService(
         var savedFilePath: String? = null
 
         if (file != null && !file.isEmpty) {
-            val uploadDir = File(System.getProperty("user.dir"),"uploads")
-            if (!uploadDir.exists()){
-                uploadDir.mkdirs()
-            }
-
-            val fileName = "${UUID.randomUUID()}_${file.originalFilename}"  // 파일 충돌 방지
-            val destFile = File(uploadDir, fileName)
-
-            file.transferTo(destFile)
-
-            savedFileName = fileName
-            savedFilePath = destFile.absolutePath
+            savedFileName = supabaseStorageService.upload(file)
+            savedFilePath = supabaseStorageService.getPublicUrl(savedFileName)
         }
 
         entity.filename = savedFileName

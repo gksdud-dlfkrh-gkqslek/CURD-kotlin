@@ -15,16 +15,15 @@ import jakarta.servlet.http.HttpSession
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import java.io.File
 import java.time.LocalDate
-import java.util.UUID
 
 @Service
 class UnnumberedEquipmentService(
     private val unnumberedEquipmentRepository: UnnumberedEquipmentRepository,
     private val unnumberedReservationRepository: UnnumberedReservationRepository,
     private val userRepository: UserRepository,
-    private val historyRepository: HistoryRepository
+    private val historyRepository: HistoryRepository,
+    private val supabaseStorageService: SupabaseStorageService
 ) {
     //번호 없는 장비 등록
     fun unnumbercreate(unnumberedEquipmentDto: UnnumberedEquipmentDto):String{
@@ -73,18 +72,8 @@ class UnnumberedEquipmentService(
             var savedFilePath: String? = null
 
             if (file != null && !file.isEmpty) {
-                val uploadDir = File(System.getProperty("user.dir"),"uploads")
-                if (!uploadDir.exists()){
-                    uploadDir.mkdirs()
-                }
-
-                val fileName = "${UUID.randomUUID()}_${file.originalFilename}"  // 파일 충돌 방지
-                val destFile = File(uploadDir, fileName)
-
-                file.transferTo(destFile)
-
-                savedFileName = fileName
-                savedFilePath = destFile.absolutePath
+                savedFileName = supabaseStorageService.upload(file)
+                savedFilePath = supabaseStorageService.getPublicUrl(savedFileName)
             }
 
             val reservation = UnnumberedReservationEntity(
