@@ -785,8 +785,9 @@
       } else {
         btn = `<button class="btn-reserve can" onclick="openReserveModal('${eq.id}')">예약하기</button>`;
       }
-      const photoTd = eq.filename
-        ? `<td style="text-align:center;"><img src="/uploads/${eq.filename}" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${eq.filename}')"/></td>`
+      const pUrl = photoUrl(eq);
+      const photoTd = pUrl
+        ? `<td style="text-align:center;"><img src="${pUrl}" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${pUrl}')"/></td>`
         : `<td style="text-align:center;"><div style="width:44px;height:44px;border-radius:6px;background:var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--text-dim);">없음</div></td>`;
       return `<tr>
         ${photoTd}
@@ -1015,8 +1016,14 @@
     }
   }
 
-  function openPhotoModal(filename) {
-    document.getElementById('photoModalImg').src = '/uploads/' + filename;
+  // 사진 URL 헬퍼
+  function photoUrl(item) {
+    if (item.filePath && item.filePath.startsWith('http')) return item.filePath;
+    if (item.filename) return '/uploads/' + item.filename;
+    return null;
+  }
+  function openPhotoModal(url) {
+    document.getElementById('photoModalImg').src = url;
     document.getElementById('photoModal').classList.add('show');
   }
   function closePhotoModal() {
@@ -1118,8 +1125,9 @@
 
           const typeLabel = item.type === 'unnumbered' ? '<span style="display:inline-block;background:var(--accent-lt);color:var(--accent);padding:.1rem .4rem;border-radius:4px;font-size:.65rem;font-weight:600;margin-left:.4rem;">번호없음</span>' : '';
 
-          const photoBtn = item.filename
-            ? `<button class="btn-cancel" style="background:var(--accent-lt);color:var(--accent);border-color:rgba(37,99,235,.3);margin-right:.4rem;" onclick="openPhotoModal('${item.filename}')">📷 사진보기</button>`
+          const pUrl = photoUrl(item);
+          const photoBtn = pUrl
+            ? `<button class="btn-cancel" style="background:var(--accent-lt);color:var(--accent);border-color:rgba(37,99,235,.3);margin-right:.4rem;" onclick="openPhotoModal('${pUrl}')">📷 사진보기</button>`
             : '';
 
           return `
@@ -1379,8 +1387,9 @@ async function loadMyHistory() {
     const html = Object.entries(grouped).map(([date, items]) => {
       const rows = items.map(h => {
         const sc = h.returnStatus === '정상' ? 'normal' : h.returnStatus === '고장' ? 'repair' : 'broken';
-        const photoBtn = h.filename
-          ? `<button onclick="openPhotoModal('${h.filename}')" style="background:var(--accent);color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:.8rem;">📷 보기</button>`
+        const pUrl = photoUrl(h);
+        const photoBtn = pUrl
+          ? `<button onclick="openPhotoModal('${pUrl}')" style="background:var(--accent);color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:.8rem;">📷 보기</button>`
           : `<span style="color:#aaa;">-</span>`;
         return `<tr>
           <td><strong>${h.equipmentName}</strong></td>

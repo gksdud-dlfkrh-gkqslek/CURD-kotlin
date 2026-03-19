@@ -500,9 +500,16 @@
     let allHistory         = [];
     let pendingAction      = null;
 
+    // ── 사진 URL 헬퍼 (Supabase URL이면 그대로, 아니면 로컬 /uploads/ 경로)
+    function photoUrl(item) {
+        if (item.filePath && item.filePath.startsWith('http')) return item.filePath;
+        if (item.filename) return '/uploads/' + item.filename;
+        return null;
+    }
+
     // ── 사진 보기
-    function openPhotoModal(filename) {
-        document.getElementById('photoModalImg').src = '/uploads/' + filename;
+    function openPhotoModal(url) {
+        document.getElementById('photoModalImg').src = url;
         document.getElementById('photoModal').classList.add('show');
     }
     function closePhotoModal() {
@@ -674,8 +681,9 @@
                 ? `<span style="font-size:.7rem;color:var(--text-dim);">예약중</span>`
                 : `<button class="btn-icon edit" onclick="openEditModal('${eq.id}')">✏️</button>
                    <button class="btn-icon del" data-id="${eq.id}" data-name="${eq.name}" onclick="handleDelete(this)">🗑</button>`;
-            const photoTd = eq.filename
-                ? `<td style="text-align:center;"><img src="/uploads/${eq.filename}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${eq.filename}')"/></td>`
+            const pUrl = photoUrl(eq);
+            const photoTd = pUrl
+                ? `<td style="text-align:center;"><img src="${pUrl}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${pUrl}')"/></td>`
                 : `<td style="text-align:center;"><div style="width:48px;height:48px;border-radius:6px;background:var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--text-dim);">없음</div></td>`;
             return `<tr>
                 ${photoTd}
@@ -898,8 +906,9 @@
                     const statusBadge = isPendingReturn
                         ? `<span class="badge" style="background:var(--yellow-bg);color:var(--yellow);">반납 승인 대기</span>`
                         : `<span class="badge rsv-yes">예약중</span>`;
-                    const photoTd = eq.filename
-                        ? `<td style="text-align:center;"><img src="/uploads/${eq.filename}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${eq.filename}')"/></td>`
+                    const pUrl = photoUrl(eq);
+                    const photoTd = pUrl
+                        ? `<td style="text-align:center;"><img src="${pUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${pUrl}')"/></td>`
                         : `<td style="text-align:center;"><div style="width:40px;height:40px;border-radius:6px;background:var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--text-dim);">없음</div></td>`;
                     return `<tr>
                         ${photoTd}
@@ -958,8 +967,9 @@
                     const statusBadge = isPendingReturn
                         ? `<span class="badge" style="background:var(--yellow-bg);color:var(--yellow);">반납 승인 대기</span>`
                         : `<span class="badge rsv-yes">예약중</span>`;
-                    const photoTd = rsv.filename
-                        ? `<td style="text-align:center;"><img src="/uploads/${rsv.filename}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${rsv.filename}')"/></td>`
+                    const pUrl = photoUrl(rsv);
+                    const photoTd = pUrl
+                        ? `<td style="text-align:center;"><img src="${pUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${pUrl}')"/></td>`
                         : `<td style="text-align:center;"><div style="width:40px;height:40px;border-radius:6px;background:var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--text-dim);">없음</div></td>`;
                     return `<tr>
                         ${photoTd}
@@ -1150,8 +1160,9 @@
                     const user = users.find(u => u.id === eq.userId);
                     const displayStatus = eq.status.replace('요청', '');
                     const sc = displayStatus === '정상' ? 'normal' : displayStatus === '고장' ? 'repair' : 'broken';
-                    const photoTd = eq.filename
-                        ? `<td style="text-align:center;"><img src="/uploads/${eq.filename}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${eq.filename}')"/></td>`
+                    const pUrl = photoUrl(eq);
+                    const photoTd = pUrl
+                        ? `<td style="text-align:center;"><img src="${pUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${pUrl}')"/></td>`
                         : `<td style="text-align:center;"><div style="width:40px;height:40px;border-radius:6px;background:var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--text-dim);">없음</div></td>`;
                     return `<tr>
                         ${photoTd}
@@ -1203,8 +1214,9 @@
                     for (const eq of allUnnumbered) {
                         if (eq.reservations?.some(r => r.id === rsv.id)) { eqName = eq.name; break; }
                     }
-                    const photoTd = rsv.filename
-                        ? `<td style="text-align:center;"><img src="/uploads/${rsv.filename}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${rsv.filename}')"/></td>`
+                    const pUrl = photoUrl(rsv);
+                    const photoTd = pUrl
+                        ? `<td style="text-align:center;"><img src="${pUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${pUrl}')"/></td>`
                         : `<td style="text-align:center;"><div style="width:40px;height:40px;border-radius:6px;background:var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--text-dim);">없음</div></td>`;
                     return `<tr>
                         ${photoTd}
@@ -1317,8 +1329,9 @@
         const html = Object.entries(grouped).map(([date, items]) => {
             const rows = items.map(h => {
                 const sc = h.returnStatus === '정상' ? 'normal' : h.returnStatus === '고장' ? 'repair' : 'broken';
-                const photoBtn = h.filename
-                    ? `<button class="btn-sm btn-outline" style="height:24px;font-size:.68rem;" onclick="openPhotoModal('${h.filename}')">📷 사진</button>`
+                const pUrl = photoUrl(h);
+                const photoBtn = pUrl
+                    ? `<button class="btn-sm btn-outline" style="height:24px;font-size:.68rem;" onclick="openPhotoModal('${pUrl}')">📷 사진</button>`
                     : '-';
                 return `<tr>
                     <td><strong>${h.equipmentName}</strong></td>
@@ -1370,8 +1383,9 @@
             if (userEquips.length) {
                 const rows = userEquips.map(eq => {
                     const sc = eq.status === '정상' ? 'normal' : eq.status === '수리' ? 'repair' : 'broken';
-                    const photoTd = eq.filename
-                        ? `<td style="text-align:center;"><img src="/uploads/${eq.filename}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${eq.filename}')"/></td>`
+                    const pUrl = photoUrl(eq);
+                    const photoTd = pUrl
+                        ? `<td style="text-align:center;"><img src="${pUrl}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${pUrl}')"/></td>`
                         : `<td style="text-align:center;color:#aaa;">-</td>`;
                     return `<tr>
                         ${photoTd}
@@ -1411,8 +1425,9 @@
                 const groupHtml = Object.entries(grouped).map(([date, items]) => {
                     const rows = items.map(h => {
                         const sc = h.returnStatus === '정상' ? 'normal' : h.returnStatus === '고장' ? 'repair' : 'broken';
-                        const photoTd = h.filename
-                            ? `<td style="text-align:center;"><img src="/uploads/${h.filename}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${h.filename}')"/></td>`
+                        const pUrl = photoUrl(h);
+                        const photoTd = pUrl
+                            ? `<td style="text-align:center;"><img src="${pUrl}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="openPhotoModal('${pUrl}')"/></td>`
                             : `<td style="text-align:center;color:#aaa;">-</td>`;
                         return `<tr>
                             ${photoTd}
